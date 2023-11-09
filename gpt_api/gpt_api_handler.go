@@ -46,6 +46,10 @@ func GptApi2(content string, keywordsArr []domain.Keywords) (string, error) {
         Model:    "gpt-3.5-turbo",
         Messages: messagesInfo,
     }
+    if utils.ModelVersion != "" {
+        contentInfo.Model = utils.ModelVersion
+        log.Println("contentInfo.Model ：", contentInfo.Model)
+    }
 
     //contentInit := "{\"model\":\"gpt-3.5-turbo\",\"messages\":[{\"role\":\"user\",\"content\":\"\"}]}"
     //jsonDecoder := json.NewEncoder(nil)
@@ -57,9 +61,6 @@ func GptApi2(content string, keywordsArr []domain.Keywords) (string, error) {
 
     req, err := http.NewRequest("POST", url, strings.NewReader(string(postContent)))
     req.Header.Set("Content-Type", "application/json")
-
-    // zxj
-    // sk-xxx
 
     if utils.ApiKey != "" {
         req.Header.Set("Authorization", "Bearer " + utils.ApiKey)

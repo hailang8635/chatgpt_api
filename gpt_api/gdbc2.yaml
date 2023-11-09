@@ -1,6 +1,0 @@
-database:
-  host: your_ip
-  port: your_port
-  user: your_user
-  password: your_password
-  dbname: your_db

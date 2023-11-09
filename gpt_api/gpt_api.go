@@ -4,9 +4,9 @@ import (
     "bufio"
     "encoding/xml"
     "fmt"
-    "go_test/data_dict"
-    "go_test/domain"
-    "go_test/utils"
+    "chatgpt_api/config"
+    "chatgpt_api/domain"
+    "chatgpt_api/utils"
     "io"
     "log"
     "net/http"
@@ -116,7 +116,7 @@ func processWechatRequest(w http.ResponseWriter, r *http.Request, data []byte, s
     // 过滤敏感关键词
     keywordParams := utils.Substring(keywordParamsOrigin, 20)
 
-    if data_dict.VerfiyBadWordsOnlyResult(keywordParamsOrigin) {
+    if config.VerfiyBadWordsOnlyResult(keywordParamsOrigin) {
         fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, "该问题受限于法律法规限制无法回答.."))
         return
     }
@@ -187,7 +187,7 @@ func processNewKeyword(w http.ResponseWriter, keywordParamsOrigin string, keywor
 
     // 微信最大2048字节
     respStr = utils.SubstringByBytes(respStr, 2040)
-    isBad, respStrModified := data_dict.VerfiyBadWords(respStr)
+    isBad, respStrModified := config.VerfiyBadWords(respStr)
     if isBad {
         // fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, "该问题受限于法律法规限制无法回答.."))
         respStr = respStrModified

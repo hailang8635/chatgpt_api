@@ -1,9 +1,9 @@
-package data_dict
+package config
 
 import (
+    "chatgpt_api/utils"
     "fmt"
     "github.com/gobuffalo/packr"
-    "go_test/utils"
     "log"
     "strings"
 )
@@ -13,7 +13,7 @@ var bad_words []string
 func init() {
 
     text := getPackrText(".", "ban_words.txt")
-    text += getPackrText("/opt/gpt_api/", "ban_words.txt")
+    text += getPackrText("./config/", "ban_words.txt")
 
     lineArr := strings.Split(text, "\n")
     for _, line := range lineArr {
@@ -58,7 +58,7 @@ func VerfiyBadWords(wordStr string) (bool, string) {
     for _, badWord := range bad_words {
         if wordStr != "" && badWord != "" && strings.Contains(strings.ToLower(wordStr), badWord) || strings.Contains(badWord, strings.ToLower(wordStr)) {
             result = true
-            log.Println("wordStr : ", wordStr, " badWord: ", badWord)
+            //log.Println("wordStr : ", wordStr, " badWord: ", badWord)
             wordStr = strings.ReplaceAll(wordStr, badWord, "**")
         }
     }

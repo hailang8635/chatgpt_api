@@ -15,12 +15,13 @@ var GlobalConn *gorm.DB
 
 
 var ApiKey string
+var ModelVersion string
 
 // 启动时每个包自动执行init()方法
 func init() {
 
     config := viper.New()
-    config.AddConfigPath("./gpt_api/")
+    config.AddConfigPath("./config/")
     config.SetConfigName("gdbc")
     config.SetConfigType("yaml")
     if err := config.ReadInConfig(); err != nil {
@@ -38,6 +39,7 @@ func init() {
 
     // api_key
     ApiKey = config.GetString("apikey")
+    ModelVersion = config.GetString("modelVersion")
 
     dsn := user + ":" + password + "@tcp(" + host + ":" + port + ")/" + dbname + "?charset=utf8mb4&parseTime=True&loc=Local"
     //log.Printf("dsn", string(dsn))

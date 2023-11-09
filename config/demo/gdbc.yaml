@@ -6,6 +6,4 @@ database:
   dbname: chatgpt
 
 apikey: sk-xxx
-
-# zxs
-#apikey: sk-xxx
+modelVersion: gpt-4
