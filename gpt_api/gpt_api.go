@@ -35,11 +35,11 @@ func Gpt_http_server() {
     http.ListenAndServe(":8080", nil)
 }
 
-/*
-*
 
-    GPT3.5
-*/
+/**
+ *
+ * GPT3.5
+ */
 func chatHandlerWithDB() {
     http.HandleFunc("/chat", func(w http.ResponseWriter, r *http.Request) {
         startTime := time.Now()
@@ -457,9 +457,9 @@ func makeResponseString2(toUserName string, fromUserName string, msgType string,
     return string(respXml2String)
 }
 
-/*
-命令行使用
-*/
+/**
+ * 命令行使用
+ */
 func Ask_gpt() (string, error) {
     if len(os.Args) >= 2 {
         args1 := os.Args[1]
