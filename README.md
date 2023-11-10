@@ -11,6 +11,13 @@ golang编译后发布到国际云上后暴露API接口，把地址配置到微�
 
 ```
 go mod init chatgpt_api
+go build chatgpt_api.go
+
+
+
+idea 设置 File ---> Setting ---> Language & Framework ----> Go ----> Go Modules
+选中 Enable Go Modules(vgo) integration
+Proxy：https://goproxy.cn
 ```
 
 ## go build
@@ -26,9 +33,9 @@ SET GOARCH=arm
 SET CGO_ENABLED=0
 
 Mac:
-CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build go_main.go
-CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build go_main.go
-CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build go_main.go
+CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build chatgpt_api.go
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build chatgpt_api.go
+CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build chatgpt_api.go
 
 ```
 
