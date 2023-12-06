@@ -13,7 +13,9 @@ var bad_words []string
 func init() {
 
     text := getPackrText(".", "ban_words.txt")
-    text += getPackrText("./config/", "ban_words.txt")
+    //text += getPackrText("./config/", "ban_words.txt")
+    //text += getPackrText("/mnt/e/logs/config", "ban_words.txt")
+    text += getPackrText("/opt/chatgpt_api/config", "ban_words.txt")
 
     lineArr := strings.Split(text, "\n")
     for _, line := range lineArr {
@@ -33,7 +35,7 @@ func init() {
 
 func getPackrText(path string, filename string) string {
     box := packr.NewBox(path)
-    log.Println(box.List(), box.Path)
+    log.Println("getPackrText ", filename, "in", box.List(), ", path:[", box.Path, "]", path)
     text, err := box.FindString(filename)
 
     if err != nil {

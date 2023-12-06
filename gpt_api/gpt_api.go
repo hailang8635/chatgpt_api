@@ -2,11 +2,13 @@ package gpt_api
 
 import (
     "bufio"
+    "bytes"
     "encoding/xml"
     "fmt"
     "chatgpt_api/config"
     "chatgpt_api/domain"
     "chatgpt_api/utils"
+    "github.com/yuin/goldmark"
     "io"
     "log"
     "net/http"
@@ -18,6 +20,7 @@ import (
 //user_word := make(map[string] string)
 
 var timeLayoutStr = "2006-01-02 15:04:05"
+var timeLayoutStrYYYYMMDDHHmmss = "20060102150405"
 
 var keywords = map[string]domain.RespMsg{}
 
@@ -113,7 +116,7 @@ func processWechatRequest(w http.ResponseWriter, r *http.Request, data []byte, s
         }
     }
 
-    // 过滤敏感关键词
+    // 输入参数 过滤敏感关键词
     keywordParams := utils.Substring(keywordParamsOrigin, 20)
 
     if config.VerfiyBadWordsOnlyResult(keywordParamsOrigin) {
@@ -185,8 +188,37 @@ func processNewKeyword(w http.ResponseWriter, keywordParamsOrigin string, keywor
         return
     }
 
+    longStringUrl := ""
+    if len(respStr) > 2040 || strings.Contains(respStr, "```") {
+        // TODO
+        var buf bytes.Buffer
+        err := goldmark.Convert([]byte(respStr), &buf)
+        if err != nil {
+            log.Println("markdown --> html, exception", err)
+        } else {
+            log.Println("markdown --> html, ", utils.SubstringByBytes(buf.String(), 20))
+
+            // TODO 同步至okzhang.com
+            htmlFile := startTime.Format(timeLayoutStrYYYYMMDDHHmmss) + "_"+ utils.SubstringByBytes(keywordParamsOrigin,8) + ".html"
+            file, err := os.Create("/usr/share/nginx/html/chatgpt_api_html/" + htmlFile)
+            if err != nil {
+                fmt.Println("create html file error", err)
+            }
+            defer file.Close()
+            _, err = buf.WriteTo(file)
+            if err != nil {
+                fmt.Println("write html file error", err)
+            }
+
+            // https://chatapi.okzhang.com/html/cah/test.html
+            longStringUrl = "https://chatapi.okzhang.com/html/cah/" + htmlFile
+        }
+    }
+
     // 微信最大2048字节
-    respStr = utils.SubstringByBytes(respStr, 2040)
+    respStr = utils.SubstringByBytes(respStr, 2040 - len(longStringUrl)) + "\n" + longStringUrl
+
+
     isBad, respStrModified := config.VerfiyBadWords(respStr)
     if isBad {
         // fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, "该问题受限于法律法规限制无法回答.."))

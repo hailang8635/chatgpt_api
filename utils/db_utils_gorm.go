@@ -26,7 +26,7 @@ func init() {
     config.SetConfigType("yaml")
     if err := config.ReadInConfig(); err != nil {
         if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-            log.Fatal("找不到配置文件..")
+            log.Fatal("找不到配置文件.. ./config/gdbc.yaml")
         } else {
             log.Fatal("配置文件出错..")
         }
