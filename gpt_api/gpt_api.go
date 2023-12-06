@@ -12,6 +12,7 @@ import (
     "io"
     "log"
     "net/http"
+    "net/url"
     "os"
     "strings"
     "time"
@@ -196,10 +197,10 @@ func processNewKeyword(w http.ResponseWriter, keywordParamsOrigin string, keywor
         if err != nil {
             log.Println("markdown --> html, exception", err)
         } else {
-            log.Println("markdown --> html, ", utils.SubstringByBytes(buf.String(), 20))
+            log.Println("markdown --> html, ", utils.Substring(buf.String(), 20))
 
             // TODO 同步至okzhang.com
-            htmlFile := startTime.Format(timeLayoutStrYYYYMMDDHHmmss) + "_"+ utils.SubstringByBytes(keywordParamsOrigin,8) + ".html"
+            htmlFile := startTime.Format(timeLayoutStrYYYYMMDDHHmmss) + "_"+ url.QueryEscape(utils.Substring(keywordParamsOrigin,8)) + ".html"
             file, err := os.Create(utils.HtmlDir + htmlFile)
             if err != nil {
                 fmt.Println("create html file error", err)
@@ -213,12 +214,12 @@ func processNewKeyword(w http.ResponseWriter, keywordParamsOrigin string, keywor
             }
 
             // https://chatapi.okzhang.com/html/cah/test.html
-            longStringUrl = utils.HtmlUrl + htmlFile
+            longStringUrl = utils.HtmlUrl + htmlFile + " [答案详情]"
         }
     }
 
     // 微信最大2048字节
-    respStr = utils.SubstringByBytes(respStr, 2040 - len(longStringUrl)) + "\n" + longStringUrl
+    respStr = utils.SubstringByBytes(respStr, 2040 - len(longStringUrl)) + "\n\n" + longStringUrl
 
 
     isBad, respStrModified := config.VerfiyBadWords(respStr)

@@ -2,7 +2,6 @@ package utils
 
 import (
     "encoding/base64"
-    "fmt"
     "strings"
 )
 
@@ -14,7 +13,7 @@ func SubstringByBytes(str string, length int) string {
         //length = len(str)
         return str
     } else {
-        return str[0:length] + "..."
+        return str[0:length] + ""
     }
 
 }
@@ -27,7 +26,7 @@ func Substring(str string, length int) string {
         //length = len(runeData)
         return str
     } else {
-        return string(runeData[0:length]) + "..."
+        return string(runeData[0:length]) + ""
     }
 
 }
@@ -56,9 +55,8 @@ func Base64Decode(msg string) string{
 }
 
 func TestBase64() {
-    encode := Base64Encode("IiIi5ZibLuaJuQo=")
-    fmt.Println("encode: ", encode)
-    fmt.Println("decode: ", Base64Decode("6Ieq54Sa"))
+    //encode := Base64Encode("IiIi5ZibLuaJuQo=")
+    //fmt.Println("encode: ", encode)
 
     //filePath := "../"
 }
