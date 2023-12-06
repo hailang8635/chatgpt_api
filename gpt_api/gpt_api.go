@@ -200,18 +200,20 @@ func processNewKeyword(w http.ResponseWriter, keywordParamsOrigin string, keywor
 
             // TODO 同步至okzhang.com
             htmlFile := startTime.Format(timeLayoutStrYYYYMMDDHHmmss) + "_"+ utils.SubstringByBytes(keywordParamsOrigin,8) + ".html"
-            file, err := os.Create("/usr/share/nginx/html/chatgpt_api_html/" + htmlFile)
+            file, err := os.Create(utils.HtmlDir + htmlFile)
             if err != nil {
                 fmt.Println("create html file error", err)
             }
+            file.WriteString("<html><head>  <title>ChatGPT助手-安德鲁家的550W</title>  <basefont face=\"微软雅黑\" size=\"2\" />  <meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\" /></head>")
             defer file.Close()
+
             _, err = buf.WriteTo(file)
             if err != nil {
                 fmt.Println("write html file error", err)
             }
 
             // https://chatapi.okzhang.com/html/cah/test.html
-            longStringUrl = "https://chatapi.okzhang.com/html/cah/" + htmlFile
+            longStringUrl = utils.HtmlUrl + htmlFile
         }
     }
 

@@ -60,8 +60,8 @@ func VerfiyBadWords(wordStr string) (bool, string) {
     for _, badWord := range bad_words {
         if wordStr != "" && badWord != "" && strings.Contains(strings.ToLower(wordStr), badWord) || strings.Contains(badWord, strings.ToLower(wordStr)) {
             result = true
-            //log.Println("wordStr : ", wordStr, " badWord: ", badWord)
-            wordStr = strings.ReplaceAll(wordStr, badWord, "**")
+            log.Println("wordStr: ", wordStr, ", badWord: ", badWord)
+            wordStr = strings.ReplaceAll(wordStr, badWord, "口")
         }
     }
     return result, wordStr

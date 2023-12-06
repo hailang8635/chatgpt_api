@@ -16,6 +16,8 @@ var GlobalConn *gorm.DB
 
 var ApiKey string
 var ModelVersion string
+var HtmlDir string
+var HtmlUrl string
 
 // 启动时每个包自动执行init()方法
 func init() {
@@ -40,6 +42,8 @@ func init() {
     // api_key
     ApiKey = config.GetString("apikey")
     ModelVersion = config.GetString("modelVersion")
+    HtmlUrl = config.GetString("htmlUrl")
+    HtmlDir = config.GetString("htmlDir")
 
     dsn := user + ":" + password + "@tcp(" + host + ":" + port + ")/" + dbname + "?charset=utf8mb4&parseTime=True&loc=Local"
     //log.Printf("dsn", string(dsn))
