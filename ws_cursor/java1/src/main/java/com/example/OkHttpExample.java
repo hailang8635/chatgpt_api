@@ -17,28 +17,18 @@ public class OkHttpExample {
         try {
             Response response = client.newCall(request).execute();
             if (response.isSuccessful()) {
+                System.out.println("GET Request Successful!");
+                System.out.println("Response Code: " + response.code());
+                System.out.println("Content Length: " + response.body().contentLength());
+                System.out.println("Content Type: " + response.body().contentType());
+                System.out.println("\nFirst 200 characters of response:");
                 String responseData = response.body().string();
-                System.out.println("Response data: " + responseData);
+                System.out.println(responseData.substring(0, Math.min(200, responseData.length())));
             }
         } catch (IOException e) {
+            System.out.println("GET Request Failed: " + e.getMessage());
             e.printStackTrace();
         }
-
-        // Asynchronous request
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                e.printStackTrace();
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                if (response.isSuccessful()) {
-                    String responseData = response.body().string();
-                    System.out.println("Async response data: " + responseData);
-                }
-            }
-        });
 
         // POST request example
         String json = "{\"name\":\"John\",\"age\":25}";
@@ -54,11 +44,11 @@ public class OkHttpExample {
 
         try {
             Response response = client.newCall(postRequest).execute();
-            if (response.isSuccessful()) {
-                System.out.println("POST request successful");
-            }
+            System.out.println("\nPOST Request Result:");
+            System.out.println("Success: " + response.isSuccessful());
+            System.out.println("Response Code: " + response.code());
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("\nPOST Request Failed: " + e.getMessage());
         }
     }
 }
