@@ -217,7 +217,7 @@ func processNewKeyword(w http.ResponseWriter, keywordParamsOrigin string, keywor
 			}
 
 			// https://chatapi.okzhang.com/html/cah/test.html
-			longStringUrl = utils.HtmlUrl + htmlUrlPath + " [答案详情]"
+			longStringUrl = "[答案详情见链接] \n" + utils.HtmlUrl + htmlUrlPath
 		}
 	}
 
@@ -258,7 +258,7 @@ func processNewKeyword(w http.ResponseWriter, keywordParamsOrigin string, keywor
 		Labels:      "",
 		Catalog:     "",
 		Create_time: startTime,
-		Answer:      longStringUrl + "<br/>\n" + respStr,
+		Answer:      longStringUrl + "\n" + respStr,
 		Is_done:     1,
 		Is_finished: is_finished,
 		Finish_time: endTime,
@@ -352,8 +352,8 @@ func processExistsKeyword(w http.ResponseWriter, keywordInDb domain.Keywords, ke
 			log.Printf("<---- A2.3 关键字正在处理中(已耗时:%d ), 回复给client进行重试 %s \n", time_spend, keywordParams)
 
 			// 收到粉丝消息后不想或者不能5秒内回复时，需回复“success”字符串（下文详细介绍）
-			//fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, "结果生成中...，请5s后再问一遍"))
-			fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, "答案生成中, 请5s后回复【1】获取答案"))
+			//fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, "结果生成中...，请15s后再问一遍"))
+			fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, "答案生成中, 请15s后回复【1】获取答案"))
 		}
 		// return
 	}
