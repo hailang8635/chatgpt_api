@@ -222,12 +222,17 @@ func processNewKeyword(w http.ResponseWriter, keywordParamsOrigin string, keywor
 	}
 
 	// 微信最大2048字节
-	respStr = utils.SubstringByBytes(respStr, 2000-len(longStringUrl)) + "\n" + longStringUrl
+	//respStr = utils.SubstringByBytes(respStr, 2000-len(longStringUrl)) + "\n" + longStringUrl
 
 	isBad, respStrModified := config.VerfiyBadWords(respStr)
 	if isBad {
 		// fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, "该问题受限于法律法规限制无法回答.."))
 		respStr = respStrModified
+	}
+
+	responseString := respStr
+	if len(respStr) > 2000 {
+		responseString = longStringUrl
 	}
 
 	// 保存记录，超过15s的为未返回状态，小于15s的为已返回状态
@@ -241,7 +246,7 @@ func processNewKeyword(w http.ResponseWriter, keywordParamsOrigin string, keywor
 
 	// 1 * retry_gap ?
 	if timeSpend < 1*retry_gap {
-		fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, respStr))
+		fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, responseString))
 	} else {
 		is_finished = 2
 	}
@@ -253,7 +258,7 @@ func processNewKeyword(w http.ResponseWriter, keywordParamsOrigin string, keywor
 		Labels:      "",
 		Catalog:     "",
 		Create_time: startTime,
-		Answer:      respStr,
+		Answer:      longStringUrl + "<br/>\n" + respStr,
 		Is_done:     1,
 		Is_finished: is_finished,
 		Finish_time: endTime,
@@ -315,7 +320,7 @@ func processExistsKeyword(w http.ResponseWriter, keywordInDb domain.Keywords, ke
 			log.Printf("<---- A2.1 wechat retry 3 ... >12s的请求(%d s) 该用户有已查得未返回的keyword %s \n", time_spend, keywordInDbAt15s.Keyword)
 
 			// 返回未完成的记录，并更新记录的is_finished状态
-			fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, keywordInDbAt15s.Answer+"[重复问题]"))
+			fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, keywordInDbAt15s.Answer))
 
 			keywordInDbAt15s.Is_finished = 1
 			utils.Update(keywordInDbAt15s)
@@ -336,7 +341,7 @@ func processExistsKeyword(w http.ResponseWriter, keywordInDb domain.Keywords, ke
 			log.Printf("<---- A2.2 wechat retry 3 ... >12s的请求(%d s) 该用户有已查得未返回的keyword %s \n", time_spend, keywordInDb_not_returned.Keyword)
 
 			// 返回未完成的记录，并更新记录的is_finished状态
-			fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, keywordInDb_not_returned.Answer+"[重复问题]"))
+			fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, keywordInDb_not_returned.Answer))
 
 			keywordInDb_not_returned.Is_finished = 1
 			utils.Update(keywordInDb_not_returned)
