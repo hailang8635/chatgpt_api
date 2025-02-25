@@ -222,7 +222,7 @@ func processNewKeyword(w http.ResponseWriter, keywordParamsOrigin string, keywor
 	}
 
 	// 微信最大2048字节
-	respStr = utils.SubstringByBytes(respStr, 2040-len(longStringUrl)) + "\n" + longStringUrl
+	respStr = utils.SubstringByBytes(respStr, 2000-len(longStringUrl)) + "\n" + longStringUrl
 
 	isBad, respStrModified := config.VerfiyBadWords(respStr)
 	if isBad {
@@ -363,7 +363,7 @@ func makeResponseString2(toUserName string, fromUserName string, msgType string,
 	respInfo.FromUserName = domain.CDATA{toUserName}
 	respInfo.ToUserName = domain.CDATA{fromUserName}
 	respInfo.MsgType = domain.CDATA{msgType}
-	respInfo.Content = domain.CDATA{respStr}
+	respInfo.Content = domain.CDATA{utils.SubstringByBytes(respStr, 2000)}
 	respInfo.CreateTime = time.Now().Unix()
 
 	respXml2String, _ := xml.MarshalIndent(respInfo, "", "")
