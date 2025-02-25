@@ -35,7 +35,8 @@ func Gpt_http_server() {
 	//chatHandler_bak()
 
 	log.Println("Starting server...")
-	http.ListenAndServe(":8080", nil)
+	// ":8080"
+	http.ListenAndServe(utils.DefaultPort, nil)
 }
 
 /**
@@ -101,7 +102,7 @@ func processWechatRequest(w http.ResponseWriter, r *http.Request, data []byte, s
 		// 浏览器直接访问的
 		// chatGptProcess(w, r)
 
-		fmt.Fprintf(w, "%s", "请输入您要问的内容？")
+		fmt.Fprintf(w, "%s", "请输入您要问的内容 ？")
 		return
 	}
 
@@ -135,9 +136,11 @@ func processWechatRequest(w http.ResponseWriter, r *http.Request, data []byte, s
 	}
 
 	// 取mysql中数据
+	offset_5m, _ := time.ParseDuration("-24h")
 	//keywordsInfo, exists := keywords[keywordParamsOrigin]
 	rows, keywordInDb := utils.SelectOne(domain.Keywords{
-		Keyword: keywordParamsOrigin,
+		Keyword:           keywordParamsOrigin,
+		Create_time_start: time.Now().Add(offset_5m),
 	})
 
 	// A=已存在的关键字
@@ -167,7 +170,7 @@ func processNewKeyword(w http.ResponseWriter, keywordParamsOrigin string, keywor
 		Finish_time: startTime,
 	})
 
-	offset_5m, _ := time.ParseDuration("-1m")
+	offset_5m, _ := time.ParseDuration("-5m")
 	_, userHistoryMessage := utils.SelectList(domain.Keywords{
 		Fromuser:          fromUserName,
 		Create_time_start: time.Now().Add(offset_5m),
@@ -271,7 +274,7 @@ func processExistsKeyword(w http.ResponseWriter, keywordInDb domain.Keywords, ke
 	// A1 = 已完成
 	if keywordInDb.Is_done == 1 {
 		log.Printf("<---- A1 直接返回已完成的keyword： %s", keywordParams)
-		fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, keywordInDb.Answer))
+		fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, keywordInDb.Answer+"[重复问题]"))
 
 		// 对应更新为已返回
 		if keywordInDb.Is_finished != 1 {
@@ -312,7 +315,7 @@ func processExistsKeyword(w http.ResponseWriter, keywordInDb domain.Keywords, ke
 			log.Printf("<---- A2.1 wechat retry 3 ... >12s的请求(%d s) 该用户有已查得未返回的keyword %s \n", time_spend, keywordInDbAt15s.Keyword)
 
 			// 返回未完成的记录，并更新记录的is_finished状态
-			fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, keywordInDbAt15s.Answer))
+			fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, keywordInDbAt15s.Answer+"[重复问题]"))
 
 			keywordInDbAt15s.Is_finished = 1
 			utils.Update(keywordInDbAt15s)
@@ -333,7 +336,7 @@ func processExistsKeyword(w http.ResponseWriter, keywordInDb domain.Keywords, ke
 			log.Printf("<---- A2.2 wechat retry 3 ... >12s的请求(%d s) 该用户有已查得未返回的keyword %s \n", time_spend, keywordInDb_not_returned.Keyword)
 
 			// 返回未完成的记录，并更新记录的is_finished状态
-			fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, keywordInDb_not_returned.Answer))
+			fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, keywordInDb_not_returned.Answer+"[重复问题]"))
 
 			keywordInDb_not_returned.Is_finished = 1
 			utils.Update(keywordInDb_not_returned)

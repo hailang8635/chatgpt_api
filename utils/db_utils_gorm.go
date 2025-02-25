@@ -2,6 +2,7 @@ package utils
 
 import (
 	"chatgpt_api/domain"
+	"fmt"
 	"github.com/spf13/viper"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -14,6 +15,7 @@ import (
 var GlobalConn *gorm.DB
 
 var DefaultAPI string
+var DefaultPort string
 
 var GptUrl string
 var ApiKey string
@@ -48,6 +50,10 @@ func init() {
 
 	// defaultAPI
 	DefaultAPI = config.GetString("defaultAPI")
+	DefaultPort = config.GetString("defaultPort")
+	if DefaultPort == "" {
+		DefaultPort = ":80"
+	}
 
 	// chatgpt
 	ApiKey = config.GetString("apikey")
@@ -181,6 +187,7 @@ func SelectList(keywords domain.Keywords, nums int) (int64, []domain.Keywords) {
 	db := GetDB()
 	db = db.Table("t_keywords")
 	if !keywords.Create_time_start.IsZero() {
+		fmt.Println("keywords.Create_time_start", keywords.Create_time_start)
 		db = db.Where(" create_time >= ? ", keywords.Create_time_start)
 	}
 
