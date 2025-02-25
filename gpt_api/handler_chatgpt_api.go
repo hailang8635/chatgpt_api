@@ -27,9 +27,9 @@ func GptApi(content string) (string, error) {
 
 func GptApi2(content string, keywordsArr []domain.Keywords) (string, error) {
 	// TODO 改成需要的模型
-	url := "https://api.openai.com/v1/chat/completions"
+	//url := "https://api.openai.com/v1/chat/completions"
 
-	log.Printf("  --> ask openai.com ...【%s】 (%s)\n", content, url)
+	log.Printf("  --> ask openai.com ...【%s】 (%s)\n", content, utils.GptUrl)
 
 	messagesInfo := []MessagesInfo{}
 
@@ -59,7 +59,7 @@ func GptApi2(content string, keywordsArr []domain.Keywords) (string, error) {
 
 	postContent, _ := json.Marshal(contentInfo)
 
-	req, err := http.NewRequest("POST", url, strings.NewReader(string(postContent)))
+	req, err := http.NewRequest("POST", utils.GptUrl, strings.NewReader(string(postContent)))
 	req.Header.Set("Content-Type", "application/json")
 
 	if utils.ApiKey != "" {

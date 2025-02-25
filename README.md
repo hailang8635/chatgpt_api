@@ -10,6 +10,8 @@ golang编译后发布到国际云上后暴露API接口，把地址配置到微�
 
 
 ```
+设置SDK，File > Settings > Go > GOROOT 
+
 go mod init chatgpt_api
 go build chatgpt_api.go
 

@@ -180,7 +180,8 @@ func processNewKeyword(w http.ResponseWriter, keywordParamsOrigin string, keywor
 	// 根据关键词查询GPT接口
 	apiStart := time.Now()
 	log.Printf("B2 开始查询openai.com %s \n", keywordParams)
-	respStr, err := GptApi2(keywordParamsOrigin, userHistoryMessage)
+	//respStr, err := GptApi2(keywordParamsOrigin, userHistoryMessage)
+	respStr, err := GetAPIResult(utils.DefaultAPI, keywordParamsOrigin, userHistoryMessage)
 
 	if err != nil {
 		fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, "系统忙，请稍后再试."))
