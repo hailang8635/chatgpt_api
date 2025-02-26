@@ -2,19 +2,22 @@ package utils
 
 import (
 	"encoding/base64"
+	"fmt"
 	"strings"
 )
 
 func SubstringByBytesWholeChar(str string, length int) string {
-	runeData := []rune(SubstringByBytes(str, length))
 	// length := 100
-	if len(runeData) <= 0 {
+	if len(str) <= length {
 		//length = len(runeData)
 		return str
 	} else {
-		return string(runeData[0:len(runeData)-2]) + ""
+		runeData := []rune(SubstringByBytes(str, length))
+		return string(runeData[0 : len(runeData)-2])
+		// + "[...]"
 	}
 }
+
 func SubstringByBytes(str string, length int) string {
 
 	// runeData := []rune(str)
@@ -23,7 +26,7 @@ func SubstringByBytes(str string, length int) string {
 		//length = len(str)
 		return str
 	} else {
-		return str[0:length-5] + "[...]"
+		return str[0:length]
 	}
 
 }
@@ -62,6 +65,12 @@ func Base64Decode(msg string) string {
 
 }
 
+func Test2() {
+	fmt.Println(SubstringByBytes("wwwabc我是中国人ww", 6))
+	fmt.Println(SubstringByBytesWholeChar("我是中国人www1234567890我是中国人ww", 8))
+	fmt.Println(SubstringByBytesWholeChar("www1234567890我是中国人ww", 8))
+
+}
 func TestBase64() {
 	//encode := Base64Encode("IiIi5ZibLuaJuQo=")
 	//fmt.Println("encode: ", encode)

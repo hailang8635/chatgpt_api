@@ -33,7 +33,7 @@ func GLMApiWithHistory(content string, keywordsArr []domain.KeywordAndAnswerItem
 
 	for _, keywords := range keywordsArr {
 		messagesInfo = append(messagesInfo, Message{Role: "user", Content: keywords.Keyword})
-		messagesInfo = append(messagesInfo, Message{Role: "assistant", Content: keywords.Answer})
+		// messagesInfo = append(messagesInfo, Message{Role: "assistant", Content: keywords.Answer})
 	}
 	log.Printf("附带历史消息 %d 条", len(keywordsArr))
 

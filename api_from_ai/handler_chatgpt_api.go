@@ -36,7 +36,7 @@ func GptApi2(content string, keywordsArr []domain.KeywordAndAnswerItem) (string,
 
 	for _, keywords := range keywordsArr {
 		messagesInfo = append(messagesInfo, MessagesInfo{Role: "user", Content: keywords.Keyword})
-		messagesInfo = append(messagesInfo, MessagesInfo{Role: "assistant", Content: keywords.Answer})
+		//messagesInfo = append(messagesInfo, MessagesInfo{Role: "assistant", Content: keywords.Answer})
 	}
 	log.Printf("附带历史消息 %d 条", len(keywordsArr))
 

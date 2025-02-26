@@ -18,8 +18,7 @@ var timeLayoutStrYYYYMMDDHHmmss = "20060102150405"
 
 var keywords = map[string]domain.RespMsg{}
 
-//var retry_gap int64 = 5
-//var length_wechat = 500
+var max_length_wechat = 2000
 
 func InsertItemAndReturnHistory(fromUserName string, keywordParamsOrigin string, startTime time.Time) (int64, []domain.KeywordAndAnswerItem) {
 	lastId := utils.Insert(domain.KeywordAndAnswerItem{
@@ -66,7 +65,7 @@ func UpdateItem(lastId int64, fromUserName string, keywordParamsOrigin string, s
 
 func SaveAsHTML(respStr string, keywordParamsOrigin string, startTime time.Time) string {
 	longStringUrl := ""
-	if len(respStr) > length_wechat || strings.Contains(respStr, "```") {
+	if len(respStr) > max_length_wechat || strings.Contains(respStr, "```") {
 		// TODO
 		var buf bytes.Buffer
 		err := goldmark.Convert([]byte(respStr), &buf)
@@ -105,14 +104,19 @@ func SaveAsHTML(respStr string, keywordParamsOrigin string, startTime time.Time)
 }
 
 func MakeResponseString(toUserName string, fromUserName string, respStr string) string {
-	return MakeResponseString2(toUserName, fromUserName, "text", respStr)
+	return makeResponseString2(toUserName, fromUserName, "text", respStr)
 }
-func MakeResponseString2(toUserName string, fromUserName string, msgType string, respStr string) string {
+func makeResponseString2(toUserName string, fromUserName string, msgType string, respStr string) string {
 	respInfo := domain.WXRespTextMsg{}
 	respInfo.FromUserName = domain.CDATA{toUserName}
 	respInfo.ToUserName = domain.CDATA{fromUserName}
 	respInfo.MsgType = domain.CDATA{msgType}
-	respInfo.Content = domain.CDATA{utils.SubstringByBytesWholeChar(respStr, length_wechat)}
+
+	//affixString := ""
+	//if len(respStr) >= max_length_wechat {
+	//	affixString = "[...]"
+	//}
+	respInfo.Content = domain.CDATA{utils.SubstringByBytesWholeChar(respStr, max_length_wechat)}
 	respInfo.CreateTime = time.Now().Unix()
 
 	respXml2String, _ := xml.MarshalIndent(respInfo, "", "")
