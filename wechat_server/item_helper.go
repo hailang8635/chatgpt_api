@@ -83,7 +83,12 @@ func SaveAsHTML(respStr string, keywordParamsOrigin string, startTime time.Time)
 			if err != nil {
 				fmt.Println("create html file error", err)
 			}
-			file.WriteString("<html><head>  <title>ChatGPT助手-安德鲁家的550W</title>  <basefont face=\"微软雅黑\" size=\"2\" />  <meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\" /></head>")
+			file.WriteString("<html><head>  " +
+				"<title>ChatGPT助手-安德鲁家的550W</title>  " +
+				"<basefont face=\"微软雅黑\" size=\"2\" />  " +
+				"<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no\">" +
+				"<meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\" />" +
+				"</head>")
 			defer file.Close()
 
 			_, err = buf.WriteTo(file)
