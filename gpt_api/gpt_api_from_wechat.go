@@ -11,6 +11,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -23,10 +24,11 @@ var timeLayoutStrYYYYMMDDHHmmss = "20060102150405"
 
 var keywords = map[string]domain.RespMsg{}
 
-var length_wechat = 2000
+var length_wechat = 500
 
 //var length_wechat = 300
 
+// TODO 入库等操作独立出来
 func Gpt_http_server() {
 
 	// URL请求方式
@@ -264,7 +266,7 @@ func processNewKeyword(w http.ResponseWriter, keywordParamsOrigin string, keywor
 		Catalog:     "",
 		Create_time: startTime,
 		Answer:      respStr,
-		Url:         utils.HtmlUrl + longStringUrl,
+		Url:         longStringUrl,
 		Is_done:     1,
 		Is_finished: is_finished,
 		Finish_time: endTime,
@@ -284,8 +286,8 @@ var retry_gap int64 = 5
 func processExistsKeyword(w http.ResponseWriter, keywordInDb domain.Keywords, keywordParams string, fromUserName string, toUserName string) {
 
 	urlString := ""
-	if keywordInDb.Url == "" {
-		urlString = "[答案详情见链接]\n" + urlString + "\n" + keywordInDb.Url
+	if keywordInDb.Url != "" {
+		urlString = "[答案详情见链接]\n" + utils.HtmlUrl + url.QueryEscape(keywordInDb.Url) + "\n"
 	}
 
 	// A1 = 已完成

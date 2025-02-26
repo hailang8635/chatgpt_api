@@ -12,7 +12,7 @@ func SubstringByBytesWholeChar(str string, length int) string {
 		//length = len(runeData)
 		return str
 	} else {
-		return string(runeData[0:len(runeData)-1]) + ""
+		return string(runeData[0:len(runeData)-2]) + ""
 	}
 }
 func SubstringByBytes(str string, length int) string {
