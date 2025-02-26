@@ -23,7 +23,7 @@ func SubstringByBytes(str string, length int) string {
 		//length = len(str)
 		return str
 	} else {
-		return str[0:length] + ""
+		return str[0:length-5] + "[...]"
 	}
 
 }

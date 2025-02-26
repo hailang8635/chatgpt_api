@@ -221,14 +221,18 @@ func processExistsKeyword(w http.ResponseWriter, keywordInDb domain.KeywordAndAn
 
 	urlString := ""
 	if keywordInDb.Url != "" {
-		urlString = "[答案详情见链接]\n" + config.HtmlUrl + url.QueryEscape(keywordInDb.Url) + "\n"
+		urlString = "[答案详情见链接]\n" + config.HtmlUrl + url.QueryEscape(keywordInDb.Url)
 	}
 
 	// A1 = 已完成
 	if keywordInDb.Is_done == 1 {
 		log.Printf("<---- A1 直接返回已完成的keyword： %s", keywordParams)
 
-		fmt.Fprintf(w, "%s", MakeResponseString(toUserName, fromUserName, urlString+keywordInDb.Answer+"[重复问题]"))
+		is_repeat_question := ""
+		if keywordInDb.Is_finished == 1 {
+			is_repeat_question = "\n[重复问题]"
+		}
+		fmt.Fprintf(w, "%s", MakeResponseString(toUserName, fromUserName, keywordInDb.Answer+"\n"+urlString+is_repeat_question))
 
 		// 对应更新为已返回
 		if keywordInDb.Is_finished != 1 {
@@ -269,7 +273,7 @@ func processExistsKeyword(w http.ResponseWriter, keywordInDb domain.KeywordAndAn
 			log.Printf("<---- A2.1 wechat retry 3 ... >12s的请求(%d s) 该用户有已查得未返回的keyword %s \n", time_spend, keywordInDbAt15s.Keyword)
 
 			// 返回未完成的记录，并更新记录的is_finished状态
-			fmt.Fprintf(w, "%s", MakeResponseString(toUserName, fromUserName, urlString+keywordInDbAt15s.Answer))
+			fmt.Fprintf(w, "%s", MakeResponseString(toUserName, fromUserName, keywordInDbAt15s.Answer+"\n"+urlString))
 
 			keywordInDbAt15s.Is_finished = 1
 			utils.Update(keywordInDbAt15s)
@@ -290,7 +294,7 @@ func processExistsKeyword(w http.ResponseWriter, keywordInDb domain.KeywordAndAn
 			log.Printf("<---- A2.2 wechat retry 3 ... >12s的请求(%d s) 该用户有已查得未返回的keyword %s \n", time_spend, keywordInDb_not_returned.Keyword)
 
 			// 返回未完成的记录，并更新记录的is_finished状态
-			fmt.Fprintf(w, "%s", MakeResponseString(toUserName, fromUserName, urlString+keywordInDb_not_returned.Answer))
+			fmt.Fprintf(w, "%s", MakeResponseString(toUserName, fromUserName, keywordInDb_not_returned.Answer+"\n"+urlString))
 
 			keywordInDb_not_returned.Is_finished = 1
 			utils.Update(keywordInDb_not_returned)
