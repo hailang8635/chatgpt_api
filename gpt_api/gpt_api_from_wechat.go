@@ -11,7 +11,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -24,8 +23,9 @@ var timeLayoutStrYYYYMMDDHHmmss = "20060102150405"
 
 var keywords = map[string]domain.RespMsg{}
 
-//var length_wechat = 2000
-var length_wechat = 300
+var length_wechat = 2000
+
+//var length_wechat = 300
 
 func Gpt_http_server() {
 
@@ -207,7 +207,7 @@ func processNewKeyword(w http.ResponseWriter, keywordParamsOrigin string, keywor
 			fileNameRight := utils.Substring(strings.ReplaceAll(keywordParamsOrigin, " ", ""), 12)
 			// TODO 同步至okzhang.com
 			htmlFile := startTime.Format(timeLayoutStrYYYYMMDDHHmmss) + "_" + fileNameRight + ".html"
-			htmlUrlPath := startTime.Format(timeLayoutStrYYYYMMDDHHmmss) + "_" + url.QueryEscape(fileNameRight) + ".html"
+			//htmlUrlPath := startTime.Format(timeLayoutStrYYYYMMDDHHmmss) + "_" + url.QueryEscape(fileNameRight) + ".html"
 			file, err := os.Create(utils.HtmlDir + htmlFile)
 			if err != nil {
 				fmt.Println("create html file error", err)
@@ -221,8 +221,8 @@ func processNewKeyword(w http.ResponseWriter, keywordParamsOrigin string, keywor
 			}
 
 			// https://chatapi.okzhang.com/html/cah/test.html
-			// "[答案详情见链接] \n" + utils.HtmlUrl +
-			longStringUrl = htmlUrlPath
+			// "[答案详情见链接] \n" + utils.HtmlUrl + htmlUrlPath
+			longStringUrl = htmlFile
 		}
 	}
 
@@ -237,7 +237,7 @@ func processNewKeyword(w http.ResponseWriter, keywordParamsOrigin string, keywor
 
 	responseString := respStr
 	if len(respStr) > length_wechat {
-		responseString = "[答案详情见链接] \n" + longStringUrl
+		responseString = "[答案详情见链接] \n" + utils.HtmlUrl + longStringUrl
 	}
 
 	// 保存记录，超过15s的为未返回状态，小于15s的为已返回状态
@@ -263,7 +263,7 @@ func processNewKeyword(w http.ResponseWriter, keywordParamsOrigin string, keywor
 		Labels:      "",
 		Catalog:     "",
 		Create_time: startTime,
-		Answer:      longStringUrl + "\n" + respStr,
+		Answer:      respStr,
 		Url:         utils.HtmlUrl + longStringUrl,
 		Is_done:     1,
 		Is_finished: is_finished,
@@ -282,10 +282,17 @@ var retry_gap int64 = 5
  * wx轮询(命名为A流程)
  */
 func processExistsKeyword(w http.ResponseWriter, keywordInDb domain.Keywords, keywordParams string, fromUserName string, toUserName string) {
+
+	urlString := ""
+	if keywordInDb.Url == "" {
+		urlString = "[答案详情见链接]\n" + urlString + "\n" + keywordInDb.Url
+	}
+
 	// A1 = 已完成
 	if keywordInDb.Is_done == 1 {
 		log.Printf("<---- A1 直接返回已完成的keyword： %s", keywordParams)
-		fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, keywordInDb.Url+"\n "+keywordInDb.Answer+"[重复问题]"))
+
+		fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, urlString+keywordInDb.Answer+"[重复问题]"))
 
 		// 对应更新为已返回
 		if keywordInDb.Is_finished != 1 {
@@ -326,7 +333,7 @@ func processExistsKeyword(w http.ResponseWriter, keywordInDb domain.Keywords, ke
 			log.Printf("<---- A2.1 wechat retry 3 ... >12s的请求(%d s) 该用户有已查得未返回的keyword %s \n", time_spend, keywordInDbAt15s.Keyword)
 
 			// 返回未完成的记录，并更新记录的is_finished状态
-			fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, keywordInDbAt15s.Answer))
+			fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, urlString+keywordInDbAt15s.Answer))
 
 			keywordInDbAt15s.Is_finished = 1
 			utils.Update(keywordInDbAt15s)
@@ -347,7 +354,7 @@ func processExistsKeyword(w http.ResponseWriter, keywordInDb domain.Keywords, ke
 			log.Printf("<---- A2.2 wechat retry 3 ... >12s的请求(%d s) 该用户有已查得未返回的keyword %s \n", time_spend, keywordInDb_not_returned.Keyword)
 
 			// 返回未完成的记录，并更新记录的is_finished状态
-			fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, keywordInDb_not_returned.Answer))
+			fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, urlString+keywordInDb_not_returned.Answer))
 
 			keywordInDb_not_returned.Is_finished = 1
 			utils.Update(keywordInDb_not_returned)
@@ -358,7 +365,6 @@ func processExistsKeyword(w http.ResponseWriter, keywordInDb domain.Keywords, ke
 			log.Printf("<---- A2.3 关键字正在处理中(已耗时:%d ), 回复给client进行重试 %s \n", time_spend, keywordParams)
 
 			// 收到粉丝消息后不想或者不能5秒内回复时，需回复“success”字符串（下文详细介绍）
-			//fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, "结果生成中...，请15s后再问一遍"))
 			fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, "答案生成中, 请15s后回复【1】获取答案"))
 		}
 		// return
@@ -374,7 +380,7 @@ func makeResponseString2(toUserName string, fromUserName string, msgType string,
 	respInfo.FromUserName = domain.CDATA{toUserName}
 	respInfo.ToUserName = domain.CDATA{fromUserName}
 	respInfo.MsgType = domain.CDATA{msgType}
-	respInfo.Content = domain.CDATA{utils.SubstringByBytes(respStr, length_wechat)}
+	respInfo.Content = domain.CDATA{utils.SubstringByBytesWholeChar(respStr, length_wechat)}
 	respInfo.CreateTime = time.Now().Unix()
 
 	respXml2String, _ := xml.MarshalIndent(respInfo, "", "")

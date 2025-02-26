@@ -49,14 +49,14 @@ func GLMApi2(content string, keywordsArr []domain.Keywords) (string, error) {
 
 	jsonBody, _ := json.Marshal(requestBody)
 
-	fmt.Println("jsonBody request", requestBody)
+	//fmt.Println("jsonBody request", requestBody)
 
 	// 创建 HTTP 请求
 	req, _ := http.NewRequest("POST", utils.GLM_Url, bytes.NewBuffer(jsonBody))
 	req.Header.Set("Authorization", utils.GLM_Apikey)
 	req.Header.Set("Content-Type", "application/json")
 
-	fmt.Println("req json", req)
+	log.Printf("req json: ", utils.GLM_Model, utils.GLM_Url, messagesInfo)
 
 	// 发送请求
 	client := &http.Client{}
@@ -78,9 +78,9 @@ func GLMApi2(content string, keywordsArr []domain.Keywords) (string, error) {
 		panic(err)
 	}
 
-	fmt.Println("ChatGLMResponse2: ", result)
+	// fmt.Println("ChatGLMResponse2: ", result)
 	if result.Error.Code == "" {
-		fmt.Println("回复:", result.Choices[0].Message)
+		fmt.Println("回复:", utils.Substring(result.Choices[0].Message.Content, 100))
 	} else {
 		fmt.Println("错误:", result.Error.Message)
 	}

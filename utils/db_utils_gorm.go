@@ -116,6 +116,7 @@ func Insert(keywords domain.Keywords) int64 {
 
 	keywords.Create_time = time.Now()
 	keywords.Finish_time = time.Now()
+	keywords.Update_time = time.Now()
 
 	// .Debug()
 	db := GetDB()
