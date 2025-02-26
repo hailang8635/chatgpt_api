@@ -1,4 +1,4 @@
-package gpt_api
+package api_from_ai
 
 import (
 	"encoding/json"

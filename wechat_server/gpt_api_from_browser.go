@@ -1,7 +1,6 @@
-package gpt_api
+package wechat_server
 
 import (
-	"chatgpt_api/utils"
 	"fmt"
 	"net/http"
 )
@@ -20,7 +19,7 @@ func chatGptProcess(w http.ResponseWriter, r *http.Request) {
 		return
 	} else {
 		// 根据关键词查询GPT接口
-		respStr, err := GetAPIResult(utils.DefaultAPI, s, nil)
+		respStr, err := GetAPIResult(s, nil)
 		if err != nil {
 			fmt.Fprintf(w, "%s %s", s, "系统忙，请稍后再试.")
 			return

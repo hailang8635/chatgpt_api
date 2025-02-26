@@ -1,7 +1,8 @@
-package gpt_api
+package wechat_server
 
 import (
 	"bufio"
+	"chatgpt_api/api_from_ai"
 	"fmt"
 	"log"
 	"os"
@@ -13,7 +14,7 @@ import (
 func Ask_gpt() (string, error) {
 	if len(os.Args) >= 2 {
 		args1 := os.Args[1]
-		respBody, err := GptApi(args1)
+		respBody, err := api_from_ai.GptApi(args1)
 
 		if err != nil {
 			log.Println("gpt_api 调用失败")
@@ -35,7 +36,7 @@ func Ask_gpt() (string, error) {
 		}
 
 		log.Println("正在问ChatGpt ... 【", line, "】")
-		resp, err := GptApi(line)
+		resp, err := api_from_ai.GptApi(line)
 		if err != nil {
 			log.Println("gpt_api 调用失败")
 			return "", err

@@ -1,6 +1,7 @@
-package gpt_api
+package api_from_ai
 
 import (
+	"chatgpt_api/config"
 	"chatgpt_api/domain"
 	"chatgpt_api/utils"
 	"encoding/json"
@@ -25,11 +26,11 @@ func GptApi(content string) (string, error) {
 	return GptApi2(content, nil)
 }
 
-func GptApi2(content string, keywordsArr []domain.Keywords) (string, error) {
+func GptApi2(content string, keywordsArr []domain.KeywordAndAnswerItem) (string, error) {
 	// TODO 改成需要的模型
 	//url := "https://api.openai.com/v1/chat/completions"
 
-	log.Printf("  --> ask openai.com ...【%s】 (%s)\n", content, utils.GptUrl)
+	log.Printf("  --> ask openai.com ...【%s】 (%s)\n", content, config.GptUrl)
 
 	messagesInfo := []MessagesInfo{}
 
@@ -46,8 +47,8 @@ func GptApi2(content string, keywordsArr []domain.Keywords) (string, error) {
 		Model:    "gpt-3.5-turbo",
 		Messages: messagesInfo,
 	}
-	if utils.ModelVersion != "" {
-		contentInfo.Model = utils.ModelVersion
+	if config.ModelVersion != "" {
+		contentInfo.Model = config.ModelVersion
 		log.Println("contentInfo.Model ：", contentInfo.Model)
 	}
 
@@ -59,11 +60,11 @@ func GptApi2(content string, keywordsArr []domain.Keywords) (string, error) {
 
 	postContent, _ := json.Marshal(contentInfo)
 
-	req, err := http.NewRequest("POST", utils.GptUrl, strings.NewReader(string(postContent)))
+	req, err := http.NewRequest("POST", config.GptUrl, strings.NewReader(string(postContent)))
 	req.Header.Set("Content-Type", "application/json")
 
-	if utils.ApiKey != "" {
-		req.Header.Set("Authorization", "Bearer "+utils.ApiKey)
+	if config.ApiKey != "" {
+		req.Header.Set("Authorization", "Bearer "+config.ApiKey)
 	} else {
 		//
 		log.Fatal("未配置ApiKey")

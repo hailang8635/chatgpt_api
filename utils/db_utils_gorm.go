@@ -14,20 +14,6 @@ import (
 
 var GlobalConn *gorm.DB
 
-var DefaultAPI string
-var DefaultPort string
-
-var GptUrl string
-var ApiKey string
-var ModelVersion string
-
-var GLM_Apikey string
-var GLM_Model string
-var GLM_Url string
-
-var HtmlDir string
-var HtmlUrl string
-
 // 启动时每个包自动执行init()方法
 func init() {
 
@@ -47,26 +33,6 @@ func init() {
 	user := config.GetString("database.user")
 	password := config.GetString("database.password")
 	dbname := config.GetString("database.dbname")
-
-	// defaultAPI
-	DefaultAPI = config.GetString("defaultAPI")
-	DefaultPort = config.GetString("defaultPort")
-	if DefaultPort == "" {
-		DefaultPort = ":80"
-	}
-
-	// chatgpt
-	ApiKey = config.GetString("apikey")
-	ModelVersion = config.GetString("modelVersion")
-	GptUrl = config.GetString("gptUrl")
-
-	// glm
-	GLM_Apikey = config.GetString("glm.apikey")
-	GLM_Model = config.GetString("glm.model")
-	GLM_Url = config.GetString("glm.url")
-
-	HtmlUrl = config.GetString("htmlUrl")
-	HtmlDir = config.GetString("htmlDir")
 
 	dsn := user + ":" + password + "@tcp(" + host + ":" + port + ")/" + dbname + "?charset=utf8mb4&parseTime=True&loc=Local"
 	//log.Printf("dsn", string(dsn))
@@ -111,7 +77,7 @@ func GetDB() *gorm.DB {
 }
 
 // func Insert(fromuser string, keyword string, answer string, is_finished int, is_done int) int64 {
-func Insert(keywords domain.Keywords) int64 {
+func Insert(keywords domain.KeywordAndAnswerItem) int64 {
 	startTime := time.Now().UnixMilli()
 
 	keywords.Create_time = time.Now()
@@ -128,12 +94,12 @@ func Insert(keywords domain.Keywords) int64 {
 	return keywords.Id
 }
 
-func Update(keywords domain.Keywords) int64 {
+func Update(keywords domain.KeywordAndAnswerItem) int64 {
 	startTime := time.Now().UnixMilli()
 
 	// .Debug()
 	db := GetDB()
-	result := db.Table("t_keywords").Model(&keywords).Where("id = ?", keywords.Id).UpdateColumns(domain.Keywords{
+	result := db.Table("t_keywords").Model(&keywords).Where("id = ?", keywords.Id).UpdateColumns(domain.KeywordAndAnswerItem{
 		Answer:      keywords.Answer,
 		Url:         keywords.Url,
 		Is_finished: keywords.Is_finished,
@@ -145,22 +111,22 @@ func Update(keywords domain.Keywords) int64 {
 	return result.RowsAffected
 }
 
-// func Select(fromuser string, keyword string, answer string, is_finished int, is_done int) (int64, Keywords) {
-func SelectOne(keywords domain.Keywords) (int64, domain.Keywords) {
+// func Select(fromuser string, keyword string, answer string, is_finished int, is_done int) (int64, KeywordAndAnswerItem) {
+func SelectOne(keywords domain.KeywordAndAnswerItem) (int64, domain.KeywordAndAnswerItem) {
 	_, arr := SelectList(keywords, 1)
 	if arr != nil && len(arr) >= 1 {
 		return 1, arr[0]
 	} else {
-		return 0, domain.Keywords{}
+		return 0, domain.KeywordAndAnswerItem{}
 	}
 }
-func SelectList(keywords domain.Keywords, nums int) (int64, []domain.Keywords) {
+func SelectList(keywords domain.KeywordAndAnswerItem, nums int) (int64, []domain.KeywordAndAnswerItem) {
 	startTime := time.Now().UnixMilli()
 
 	// 创建数据信息
-	var keywords_result []domain.Keywords
+	var keywords_result []domain.KeywordAndAnswerItem
 
-	//keywords := Keywords{}
+	//keywords := KeywordAndAnswerItem{}
 	params := map[string]interface{}{}
 
 	// {"name": "jinzhu", "age": 20}
@@ -182,7 +148,7 @@ func SelectList(keywords domain.Keywords, nums int) (int64, []domain.Keywords) {
 	}
 
 	// 创建表自动迁移, 把结构体和数据表进行对应
-	//db.AutoMigrate(&Keywords{})
+	//db.AutoMigrate(&KeywordAndAnswerItem{})
 
 	// .Debug()
 	// .First()

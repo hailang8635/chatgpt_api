@@ -1,19 +1,33 @@
-package gpt_api
+package wechat_server
 
 import (
+	"chatgpt_api/api_from_ai"
+	"chatgpt_api/config"
 	"chatgpt_api/domain"
 	"fmt"
+	"log"
 )
 
-func GetAPIResult(api string, content string, keywordsArr []domain.Keywords) (string, error) {
+/**
+ * api string,
+ */
+func GetAPIResult(content string, item []domain.KeywordAndAnswerItem) (string, error) {
+	// Mock TODO
+	api := config.DefaultAPI
+
+	if config.SwitchForMockOfAiApi {
+		log.Println("使用mock接口，不真实调用外部api，SwitchForMockOfAiApi: ", config.SwitchForMockOfAiApi)
+		return config.ApiResponseString, nil
+	}
+
 	if api == "gpt" {
-		return GptApi2(content, keywordsArr)
+		return api_from_ai.GptApi2(content, item)
 
 	} else if api == "glm" {
-		return GLMApi(content)
+		return api_from_ai.GLMApiWithHistory(content, item)
 
 	} else {
-		return GLMApi2(content, keywordsArr)
+		return api_from_ai.GLMApiWithHistory(content, item)
 	}
 
 }

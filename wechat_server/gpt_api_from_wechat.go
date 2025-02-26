@@ -1,18 +1,15 @@
-package gpt_api
+package wechat_server
 
 import (
-	"bytes"
 	"chatgpt_api/config"
 	"chatgpt_api/domain"
 	"chatgpt_api/utils"
 	"encoding/xml"
 	"fmt"
-	"github.com/yuin/goldmark"
 	"io"
 	"log"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 	"time"
 )
@@ -20,10 +17,11 @@ import (
 //user_word := make(map[string] string)
 
 var timeLayoutStr = "2006-01-02 15:04:05"
-var timeLayoutStrYYYYMMDDHHmmss = "20060102150405"
 
-var keywords = map[string]domain.RespMsg{}
+//var timeLayoutStrYYYYMMDDHHmmss = "20060102150405"
 
+//var keywords = map[string]domain.RespMsg{}
+var retry_gap int64 = 5
 var length_wechat = 500
 
 //var length_wechat = 300
@@ -41,7 +39,7 @@ func Gpt_http_server() {
 
 	log.Println("Starting server...")
 	// ":8080"
-	http.ListenAndServe(utils.DefaultPort, nil)
+	http.ListenAndServe(config.DefaultPort, nil)
 }
 
 /**
@@ -116,7 +114,7 @@ func processWechatRequest(w http.ResponseWriter, r *http.Request, data []byte, s
 		if msgType == "voice" && voiceText != "" {
 			keywordParamsOrigin = voiceText
 		} else {
-			fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, "目前我只能回答文字内容.."))
+			fmt.Fprintf(w, "%s", MakeResponseString(toUserName, fromUserName, "目前我只能回答文字内容.."))
 			return
 		}
 	}
@@ -125,13 +123,13 @@ func processWechatRequest(w http.ResponseWriter, r *http.Request, data []byte, s
 	keywordParams := utils.Substring(keywordParamsOrigin, 20)
 
 	if config.VerfiyBadWordsOnlyResult(keywordParamsOrigin) {
-		fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, "该问题受限于法律法规限制无法回答.."))
+		fmt.Fprintf(w, "%s", MakeResponseString(toUserName, fromUserName, "该问题受限于法律法规限制无法回答.."))
 		return
 	}
 
 	// 微信限制5s返回，5s未返回有3次重试
 	if strings.Contains("1?？。，.,", keywordParamsOrigin) {
-		_, keywordItems := utils.SelectOne(domain.Keywords{
+		_, keywordItems := utils.SelectOne(domain.KeywordAndAnswerItem{
 			Fromuser: fromUserName,
 			//Is_done: 1,
 			OrderByIdDesc: true,
@@ -143,90 +141,43 @@ func processWechatRequest(w http.ResponseWriter, r *http.Request, data []byte, s
 	// 取mysql中数据
 	offset_5m, _ := time.ParseDuration("-24h")
 	//keywordsInfo, exists := keywords[keywordParamsOrigin]
-	rows, keywordInDb := utils.SelectOne(domain.Keywords{
+	rows, keywordAnAnswerInDb := utils.SelectOne(domain.KeywordAndAnswerItem{
 		Keyword:           keywordParamsOrigin,
 		Create_time_start: time.Now().Add(offset_5m),
 	})
 
 	// A=已存在的关键字
 	if rows >= 1 {
-		processExistsKeyword(w, keywordInDb, keywordParams, fromUserName, toUserName)
+		processExistsKeyword(w, keywordAnAnswerInDb, keywordParams, fromUserName, toUserName)
 	} else {
 		processNewKeyword(w, keywordParamsOrigin, keywordParams, fromUserName, toUserName, startTime)
 	}
 }
 
 /**
- * 新的请求(命名为B流程)
+ * 新的请求(命名为B流程-新请求)
+
+ * keywordParamsOrigin 原始关键字
+ * keywordParams 排除敏感词的关键字
  */
 func processNewKeyword(w http.ResponseWriter, keywordParamsOrigin string, keywordParams string, fromUserName string, toUserName string, startTime time.Time) {
 	// B = 第一次查询的关键字则放进map
 
 	// B1 = 第一次查询，关键字先入库
-	lastId := utils.Insert(domain.Keywords{
-		Fromuser:    fromUserName,
-		Keyword:     keywordParamsOrigin,
-		Answer:      "",
-		Labels:      "",
-		Catalog:     "",
-		Is_done:     2,
-		Is_finished: 2,
-		Create_time: startTime,
-		Finish_time: startTime,
-	})
-
-	offset_5m, _ := time.ParseDuration("-5m")
-	_, userHistoryMessage := utils.SelectList(domain.Keywords{
-		Fromuser:          fromUserName,
-		Create_time_start: time.Now().Add(offset_5m),
-		//Is_done:     1,
-		//Is_finished: 2,
-		//Keyword:  keywordParamsOrigin,
-	}, 3)
+	lastId, userHistoryMessage := InsertItemAndReturnHistory(fromUserName, keywordParamsOrigin, startTime)
 
 	// B2 = 发起调用gpt的api
 	// 根据关键词查询GPT接口
 	apiStart := time.Now()
 	log.Printf("B2 开始查询openai.com %s \n", keywordParams)
-	//respStr, err := GptApi2(keywordParamsOrigin, userHistoryMessage)
-	respStr, err := GetAPIResult(utils.DefaultAPI, keywordParamsOrigin, userHistoryMessage)
+	respStr, err := GetAPIResult(keywordParamsOrigin, userHistoryMessage)
 
 	if err != nil {
-		fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, "系统忙，请稍后再试."))
+		fmt.Fprintf(w, "%s", MakeResponseString(toUserName, fromUserName, "系统忙，请稍后再试."))
 		return
 	}
 
-	longStringUrl := ""
-	if len(respStr) > length_wechat || strings.Contains(respStr, "```") {
-		// TODO
-		var buf bytes.Buffer
-		err := goldmark.Convert([]byte(respStr), &buf)
-		if err != nil {
-			log.Println("markdown --> html, exception", err)
-		} else {
-			log.Println("markdown --> html, ", utils.Substring(buf.String(), 20))
-
-			fileNameRight := utils.Substring(strings.ReplaceAll(keywordParamsOrigin, " ", ""), 12)
-			// TODO 同步至okzhang.com
-			htmlFile := startTime.Format(timeLayoutStrYYYYMMDDHHmmss) + "_" + fileNameRight + ".html"
-			//htmlUrlPath := startTime.Format(timeLayoutStrYYYYMMDDHHmmss) + "_" + url.QueryEscape(fileNameRight) + ".html"
-			file, err := os.Create(utils.HtmlDir + htmlFile)
-			if err != nil {
-				fmt.Println("create html file error", err)
-			}
-			file.WriteString("<html><head>  <title>ChatGPT助手-安德鲁家的550W</title>  <basefont face=\"微软雅黑\" size=\"2\" />  <meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\" /></head>")
-			defer file.Close()
-
-			_, err = buf.WriteTo(file)
-			if err != nil {
-				fmt.Println("write html file error", err)
-			}
-
-			// https://chatapi.okzhang.com/html/cah/test.html
-			// "[答案详情见链接] \n" + utils.HtmlUrl + htmlUrlPath
-			longStringUrl = htmlFile
-		}
-	}
+	longStringUrl := SaveAsHTML(respStr, keywordParamsOrigin, startTime)
 
 	// 微信最大2048字节
 	//respStr = utils.SubstringByBytes(respStr, 2000-len(longStringUrl)) + "\n" + longStringUrl
@@ -239,62 +190,45 @@ func processNewKeyword(w http.ResponseWriter, keywordParamsOrigin string, keywor
 
 	responseString := respStr
 	if len(respStr) > length_wechat {
-		responseString = "[答案详情见链接] \n" + utils.HtmlUrl + longStringUrl
+		responseString = "[答案详情见链接] \n" + config.HtmlUrl + longStringUrl
 	}
 
 	// 保存记录，超过15s的为未返回状态，小于15s的为已返回状态
 	endTime := time.Now()
 
 	// B3 = 调用gpt api结束
-	log.Printf("B3 查询openai.com成功 %s 耗时 %d s \n", keywordParams, endTime.Unix()-apiStart.Unix())
+	log.Printf("B3 查询ai接口成功 %s 耗时 %d s \n", keywordParams, endTime.Unix()-apiStart.Unix())
 
 	timeSpend := endTime.Unix() - startTime.Unix()
 	is_finished := 1
 
 	// 1 * retry_gap ?
 	if timeSpend < 1*retry_gap {
-		fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, responseString))
+		fmt.Fprintf(w, "%s", MakeResponseString(toUserName, fromUserName, responseString))
 	} else {
 		is_finished = 2
 	}
 
-	keywords_final := domain.Keywords{
-		Id:          lastId,
-		Fromuser:    fromUserName,
-		Keyword:     keywordParamsOrigin,
-		Labels:      "",
-		Catalog:     "",
-		Create_time: startTime,
-		Answer:      respStr,
-		Url:         longStringUrl,
-		Is_done:     1,
-		Is_finished: is_finished,
-		Finish_time: endTime,
-	}
-
-	// B4 查询openai.com成功更新答案及is_done状态
-	utils.Update(keywords_final)
+	UpdateItem(lastId, fromUserName, keywordParamsOrigin, startTime, respStr, longStringUrl, is_finished, endTime)
 	log.Printf("<---- B4 更新状态结束 keywordParams: %s, is_done: %d, is_finished: %d, 流程耗时: %d s \n\n", keywordParams, 1, is_finished, timeSpend)
 	return
 }
 
-var retry_gap int64 = 5
-
 /**
- * wx轮询(命名为A流程)
+ * wx轮询&查询老的问题(命名为A流程-老请求)
  */
-func processExistsKeyword(w http.ResponseWriter, keywordInDb domain.Keywords, keywordParams string, fromUserName string, toUserName string) {
+func processExistsKeyword(w http.ResponseWriter, keywordInDb domain.KeywordAndAnswerItem, keywordParams string, fromUserName string, toUserName string) {
 
 	urlString := ""
 	if keywordInDb.Url != "" {
-		urlString = "[答案详情见链接]\n" + utils.HtmlUrl + url.QueryEscape(keywordInDb.Url) + "\n"
+		urlString = "[答案详情见链接]\n" + config.HtmlUrl + url.QueryEscape(keywordInDb.Url) + "\n"
 	}
 
 	// A1 = 已完成
 	if keywordInDb.Is_done == 1 {
 		log.Printf("<---- A1 直接返回已完成的keyword： %s", keywordParams)
 
-		fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, urlString+keywordInDb.Answer+"[重复问题]"))
+		fmt.Fprintf(w, "%s", MakeResponseString(toUserName, fromUserName, urlString+keywordInDb.Answer+"[重复问题]"))
 
 		// 对应更新为已返回
 		if keywordInDb.Is_finished != 1 {
@@ -326,7 +260,7 @@ func processExistsKeyword(w http.ResponseWriter, keywordInDb domain.Keywords, ke
 		time.Sleep(time.Duration(float32(retry_gap)-1.5) * time.Second)
 
 		// 14s时再查一次结果
-		_, keywordInDbAt15s := utils.SelectOne(domain.Keywords{
+		_, keywordInDbAt15s := utils.SelectOne(domain.KeywordAndAnswerItem{
 			Keyword: keywordInDb.Keyword,
 		})
 
@@ -335,7 +269,7 @@ func processExistsKeyword(w http.ResponseWriter, keywordInDb domain.Keywords, ke
 			log.Printf("<---- A2.1 wechat retry 3 ... >12s的请求(%d s) 该用户有已查得未返回的keyword %s \n", time_spend, keywordInDbAt15s.Keyword)
 
 			// 返回未完成的记录，并更新记录的is_finished状态
-			fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, urlString+keywordInDbAt15s.Answer))
+			fmt.Fprintf(w, "%s", MakeResponseString(toUserName, fromUserName, urlString+keywordInDbAt15s.Answer))
 
 			keywordInDbAt15s.Is_finished = 1
 			utils.Update(keywordInDbAt15s)
@@ -344,7 +278,7 @@ func processExistsKeyword(w http.ResponseWriter, keywordInDb domain.Keywords, ke
 
 		// A2.2 = 临界15s时渠道仍未返回
 		// 查找该用户已完成且未返回的记录
-		not_returned_rows, keywordInDb_not_returned := utils.SelectOne(domain.Keywords{
+		not_returned_rows, keywordInDb_not_returned := utils.SelectOne(domain.KeywordAndAnswerItem{
 			Fromuser:    fromUserName,
 			Is_done:     1,
 			Is_finished: 2,
@@ -356,7 +290,7 @@ func processExistsKeyword(w http.ResponseWriter, keywordInDb domain.Keywords, ke
 			log.Printf("<---- A2.2 wechat retry 3 ... >12s的请求(%d s) 该用户有已查得未返回的keyword %s \n", time_spend, keywordInDb_not_returned.Keyword)
 
 			// 返回未完成的记录，并更新记录的is_finished状态
-			fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, urlString+keywordInDb_not_returned.Answer))
+			fmt.Fprintf(w, "%s", MakeResponseString(toUserName, fromUserName, urlString+keywordInDb_not_returned.Answer))
 
 			keywordInDb_not_returned.Is_finished = 1
 			utils.Update(keywordInDb_not_returned)
@@ -367,24 +301,9 @@ func processExistsKeyword(w http.ResponseWriter, keywordInDb domain.Keywords, ke
 			log.Printf("<---- A2.3 关键字正在处理中(已耗时:%d ), 回复给client进行重试 %s \n", time_spend, keywordParams)
 
 			// 收到粉丝消息后不想或者不能5秒内回复时，需回复“success”字符串（下文详细介绍）
-			fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, "答案生成中, 请15s后回复【1】获取答案"))
+			fmt.Fprintf(w, "%s", MakeResponseString(toUserName, fromUserName, "答案生成中, 请15s后回复【1】获取答案"))
 		}
 		// return
 	}
 	return
-}
-
-func makeResponseString(toUserName string, fromUserName string, respStr string) string {
-	return makeResponseString2(toUserName, fromUserName, "text", respStr)
-}
-func makeResponseString2(toUserName string, fromUserName string, msgType string, respStr string) string {
-	respInfo := domain.WXRespTextMsg{}
-	respInfo.FromUserName = domain.CDATA{toUserName}
-	respInfo.ToUserName = domain.CDATA{fromUserName}
-	respInfo.MsgType = domain.CDATA{msgType}
-	respInfo.Content = domain.CDATA{utils.SubstringByBytesWholeChar(respStr, length_wechat)}
-	respInfo.CreateTime = time.Now().Unix()
-
-	respXml2String, _ := xml.MarshalIndent(respInfo, "", "")
-	return string(respXml2String)
 }

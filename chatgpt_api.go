@@ -1,8 +1,7 @@
 package main
 
 import (
-	"chatgpt_api/gpt_api"
-	"chatgpt_api/utils"
+	"chatgpt_api/wechat_server"
 	"fmt"
 )
 
@@ -11,9 +10,9 @@ func main() {
 	//gpt_api.GLM_test()
 	//gpt_api.GLM_test()
 
-	utils.TestBase64()
+	//utils.TestBase64()
 
 	fmt.Println("start...")
-	gpt_api.Gpt_http_server()
+	wechat_server.Gpt_http_server()
 	fmt.Println("stop...")
 }

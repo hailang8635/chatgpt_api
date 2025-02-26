@@ -18,7 +18,7 @@ type CDATA struct {
 
 */
 
-type Keywords struct {
+type KeywordAndAnswerItem struct {
 	//gorm.Model
 	Id          int64     `gorm:"id"`
 	Catalog     string    `gorm:"catalog"`

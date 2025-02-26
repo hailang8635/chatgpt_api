@@ -1,7 +1,8 @@
-package gpt_api
+package api_from_ai
 
 import (
 	"bytes"
+	"chatgpt_api/config"
 	"chatgpt_api/domain"
 	"chatgpt_api/utils"
 	"encoding/json"
@@ -18,12 +19,15 @@ const (
 //API_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions/"
 )
 
+/**
+ * 返回答案，字符串的格式
+ */
 func GLMApi(content string) (string, error) {
-	return GLMApi2(content, nil)
+	return GLMApiWithHistory(content, nil)
 }
 
-func GLMApi2(content string, keywordsArr []domain.Keywords) (string, error) {
-	log.Printf("  --> ask open.bigmodel.cn ...【%s】 (%s)\n", content, utils.GLM_Url)
+func GLMApiWithHistory(content string, keywordsArr []domain.KeywordAndAnswerItem) (string, error) {
+	log.Printf("  --> ask open.bigmodel.cn ...【%s】 (%s)\n", content, config.GLM_Url)
 
 	messagesInfo := []Message{}
 
@@ -42,7 +46,7 @@ func GLMApi2(content string, keywordsArr []domain.Keywords) (string, error) {
 	// 1+2+...+100等于几
 	requestBody := ChatGLMRequest{
 		// Model:    "glm-4-plus",
-		Model:    utils.GLM_Model,
+		Model:    config.GLM_Model,
 		Messages: messagesInfo,
 		//Messages: []Message{{Role: "user", Content: content}},
 	}
@@ -52,11 +56,11 @@ func GLMApi2(content string, keywordsArr []domain.Keywords) (string, error) {
 	//fmt.Println("jsonBody request", requestBody)
 
 	// 创建 HTTP 请求
-	req, _ := http.NewRequest("POST", utils.GLM_Url, bytes.NewBuffer(jsonBody))
-	req.Header.Set("Authorization", utils.GLM_Apikey)
+	req, _ := http.NewRequest("POST", config.GLM_Url, bytes.NewBuffer(jsonBody))
+	req.Header.Set("Authorization", config.GLM_Apikey)
 	req.Header.Set("Content-Type", "application/json")
 
-	log.Printf("req json: ", utils.GLM_Model, utils.GLM_Url, messagesInfo)
+	log.Printf("req json: ", config.GLM_Model, config.GLM_Url, messagesInfo)
 
 	// 发送请求
 	client := &http.Client{}

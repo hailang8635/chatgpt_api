@@ -1,6 +1,7 @@
-package gpt_api
+package wechat_server
 
 import (
+	"chatgpt_api/api_from_ai"
 	"chatgpt_api/domain"
 	"encoding/xml"
 	"fmt"
@@ -50,7 +51,7 @@ func chatHandler_bak() {
 				if exists {
 					if keywordsInfo.IsDone == 1 {
 						log.Println("存在的keyword，且已完成，直接返回", keywordString)
-						fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, keywordsInfo.Answer))
+						fmt.Fprintf(w, "%s", MakeResponseString(toUserName, fromUserName, keywordsInfo.Answer))
 					} else {
 						log.Println("存在的keyword，未完成，返回空", keywordString)
 						// TODO 查找该用户已完成且未返回的记录
@@ -65,10 +66,10 @@ func chatHandler_bak() {
 						}
 
 						if existNotReturnedAnswer {
-							fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, notReturnedKeyword.Answer))
+							fmt.Fprintf(w, "%s", MakeResponseString(toUserName, fromUserName, notReturnedKeyword.Answer))
 						} else {
 							// 否则返回空
-							fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, ""))
+							fmt.Fprintf(w, "%s", MakeResponseString(toUserName, fromUserName, ""))
 						}
 					}
 					return
@@ -84,9 +85,9 @@ func chatHandler_bak() {
 
 				// 根据关键词查询GPT接口
 				// 有该用户未返回消息则返回
-				respStr, err := GptApi(keywordString)
+				respStr, err := api_from_ai.GptApi(keywordString)
 				if err != nil {
-					fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, "系统忙，请稍后再试."))
+					fmt.Fprintf(w, "%s", MakeResponseString(toUserName, fromUserName, "系统忙，请稍后再试."))
 					return
 				}
 
@@ -99,7 +100,7 @@ func chatHandler_bak() {
 					IsReturned: 2,
 				}
 
-				fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, respStr))
+				fmt.Fprintf(w, "%s", MakeResponseString(toUserName, fromUserName, respStr))
 
 			} else {
 				// 浏览器直接访问的
