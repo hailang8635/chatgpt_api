@@ -1,9 +1,0 @@
-database:
-  host: ip
-  port: your_port
-  user: msp
-  password: your_password
-  dbname: chatgpt
-
-apikey: sk-xxx
-modelVersion: gpt-4

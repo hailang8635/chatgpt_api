@@ -1,0 +1,28 @@
+database:
+  host:
+  port: 3306
+  user:
+  password:
+  dbname: chatgpt
+
+
+defaultAPI: glm
+defaultPort: ":8080"
+
+# gpt模型的配置
+gptUrl: https://api.openai.com/v1/chat/completions
+apikey: sk-xxx
+
+# gpt-3.5-turbo、 gpt-4、 gpt-4-1106-preview
+modelVersion: gpt-4
+
+# glm模型的配置
+glm.url: https://open.bigmodel.cn/api/paas/v4/chat/completions/
+glm.apikey: xxx.xxx
+glm.model: glm-4-plus
+
+# 生成静态页面
+htmlDir: /usr/share/nginx/html/chatgpt_api_html/
+#htmlDir: E:/logs/
+htmlUrl: http://chatapi.okzhang.com/html/chatgpt_api_html/
+

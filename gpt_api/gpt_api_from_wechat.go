@@ -24,6 +24,9 @@ var timeLayoutStrYYYYMMDDHHmmss = "20060102150405"
 
 var keywords = map[string]domain.RespMsg{}
 
+//var length_wechat = 2000
+var length_wechat = 300
+
 func Gpt_http_server() {
 
 	// URL请求方式
@@ -192,7 +195,7 @@ func processNewKeyword(w http.ResponseWriter, keywordParamsOrigin string, keywor
 	}
 
 	longStringUrl := ""
-	if len(respStr) > 2040 || strings.Contains(respStr, "```") {
+	if len(respStr) > length_wechat || strings.Contains(respStr, "```") {
 		// TODO
 		var buf bytes.Buffer
 		err := goldmark.Convert([]byte(respStr), &buf)
@@ -201,9 +204,10 @@ func processNewKeyword(w http.ResponseWriter, keywordParamsOrigin string, keywor
 		} else {
 			log.Println("markdown --> html, ", utils.Substring(buf.String(), 20))
 
+			fileNameRight := utils.Substring(strings.ReplaceAll(keywordParamsOrigin, " ", ""), 12)
 			// TODO 同步至okzhang.com
-			htmlFile := startTime.Format(timeLayoutStrYYYYMMDDHHmmss) + "_" + utils.Substring(keywordParamsOrigin, 8) + ".html"
-			htmlUrlPath := startTime.Format(timeLayoutStrYYYYMMDDHHmmss) + "_" + url.QueryEscape(utils.Substring(keywordParamsOrigin, 8)) + ".html"
+			htmlFile := startTime.Format(timeLayoutStrYYYYMMDDHHmmss) + "_" + fileNameRight + ".html"
+			htmlUrlPath := startTime.Format(timeLayoutStrYYYYMMDDHHmmss) + "_" + url.QueryEscape(fileNameRight) + ".html"
 			file, err := os.Create(utils.HtmlDir + htmlFile)
 			if err != nil {
 				fmt.Println("create html file error", err)
@@ -217,7 +221,8 @@ func processNewKeyword(w http.ResponseWriter, keywordParamsOrigin string, keywor
 			}
 
 			// https://chatapi.okzhang.com/html/cah/test.html
-			longStringUrl = "[答案详情见链接] \n" + utils.HtmlUrl + htmlUrlPath
+			// "[答案详情见链接] \n" + utils.HtmlUrl +
+			longStringUrl = htmlUrlPath
 		}
 	}
 
@@ -231,8 +236,8 @@ func processNewKeyword(w http.ResponseWriter, keywordParamsOrigin string, keywor
 	}
 
 	responseString := respStr
-	if len(respStr) > 2000 {
-		responseString = longStringUrl
+	if len(respStr) > length_wechat {
+		responseString = "[答案详情见链接] \n" + longStringUrl
 	}
 
 	// 保存记录，超过15s的为未返回状态，小于15s的为已返回状态
@@ -259,6 +264,7 @@ func processNewKeyword(w http.ResponseWriter, keywordParamsOrigin string, keywor
 		Catalog:     "",
 		Create_time: startTime,
 		Answer:      longStringUrl + "\n" + respStr,
+		Url:         utils.HtmlUrl + longStringUrl,
 		Is_done:     1,
 		Is_finished: is_finished,
 		Finish_time: endTime,
@@ -279,7 +285,7 @@ func processExistsKeyword(w http.ResponseWriter, keywordInDb domain.Keywords, ke
 	// A1 = 已完成
 	if keywordInDb.Is_done == 1 {
 		log.Printf("<---- A1 直接返回已完成的keyword： %s", keywordParams)
-		fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, keywordInDb.Answer+"[重复问题]"))
+		fmt.Fprintf(w, "%s", makeResponseString(toUserName, fromUserName, keywordInDb.Url+"\n "+keywordInDb.Answer+"[重复问题]"))
 
 		// 对应更新为已返回
 		if keywordInDb.Is_finished != 1 {
@@ -368,7 +374,7 @@ func makeResponseString2(toUserName string, fromUserName string, msgType string,
 	respInfo.FromUserName = domain.CDATA{toUserName}
 	respInfo.ToUserName = domain.CDATA{fromUserName}
 	respInfo.MsgType = domain.CDATA{msgType}
-	respInfo.Content = domain.CDATA{utils.SubstringByBytes(respStr, 2000)}
+	respInfo.Content = domain.CDATA{utils.SubstringByBytes(respStr, length_wechat)}
 	respInfo.CreateTime = time.Now().Unix()
 
 	respXml2String, _ := xml.MarshalIndent(respInfo, "", "")

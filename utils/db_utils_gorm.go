@@ -134,6 +134,7 @@ func Update(keywords domain.Keywords) int64 {
 	db := GetDB()
 	result := db.Table("t_keywords").Model(&keywords).Where("id = ?", keywords.Id).UpdateColumns(domain.Keywords{
 		Answer:      keywords.Answer,
+		Url:         keywords.Url,
 		Is_finished: keywords.Is_finished,
 		Is_done:     keywords.Is_done,
 		Finish_time: keywords.Finish_time,
