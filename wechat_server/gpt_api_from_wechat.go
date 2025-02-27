@@ -94,7 +94,8 @@ func processWechatRequest(w http.ResponseWriter, r *http.Request, data []byte, s
 	msgType := reqInfo.MsgType
 	voiceText := reqInfo.Recognition
 
-	log.Printf("\n\n----> A0 [start新请求---->] toUserName: %s, from: %s, msgId: %d, msgType: %s time: %s, keywordParams: %s ",
+	log.Printf("\n\n")
+	log.Printf("----> A0 [start新请求---->] toUserName: %s, from: %s, msgId: %d, msgType: %s time: %s, keywordParams: %s ",
 		toUserName, fromUserName, msgId, msgType, time.Unix(createTime, 0).Format(timeLayoutStr), keywordParamsOrigin)
 
 	if keywordParamsOrigin == "" && msgType == "" {
@@ -134,7 +135,7 @@ func processWechatRequest(w http.ResponseWriter, r *http.Request, data []byte, s
 		keywordParams = keywordItems.Keyword
 	}
 
-	// 取mysql中数据
+	// 取mysql中已经存在的关键字数据
 	offset_5m, _ := time.ParseDuration("-24h")
 	//keywordsInfo, exists := keywords[keywordParamsOrigin]
 	rows, keywordAnAnswerInDb := utils.SelectOne(domain.KeywordAndAnswerItem{
@@ -292,7 +293,7 @@ func processExistsKeyword(w http.ResponseWriter, keywordInDb domain.KeywordAndAn
 		} else {
 			// 15s内未查成功，且无未返回的记录时
 
-			log.Printf("<---- A2.3 关键字正在处理中(已耗时:%d ms), 回复给client进行重试 %s \n", time_spend, keywordParams)
+			log.Printf("<---- A2.3 关键字正在处理中(已耗时:%ds), 回复给client进行重试 %s \n", time_spend, keywordParams)
 
 			// 收到粉丝消息后不想或者不能5秒内回复时，需回复“success”字符串（下文详细介绍）
 			fmt.Fprintf(w, "%s", MakeResponseString(toUserName, fromUserName, "答案生成中, 请15s后回复【1】获取答案"))

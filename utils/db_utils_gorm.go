@@ -85,7 +85,8 @@ func Insert(keywords domain.KeywordAndAnswerItem) int64 {
 
 	// .Debug()
 	db := GetDB()
-	result := db.Table("t_keywords").Create(&keywords)
+	//result := db.Table("t_keywords").Create(&keywords)
+	db.Table("t_keywords").Create(&keywords)
 
 	// fmt.Println("insert 行数", result.RowsAffected)
 	//return result.RowsAffected

@@ -32,7 +32,8 @@ func InsertItemAndReturnHistory(fromUserName string, keywordParamsOrigin string,
 		Finish_time: startTime,
 	})
 
-	offset_5m, _ := time.ParseDuration("-5m")
+	// 查询该用户的5分钟内的历史记录
+	offset_5m, _ := time.ParseDuration("-1m")
 	_, userHistoryMessage := utils.SelectList(domain.KeywordAndAnswerItem{
 		Fromuser:          fromUserName,
 		Create_time_start: time.Now().Add(offset_5m),
@@ -65,7 +66,6 @@ func UpdateItem(lastId int64, fromUserName string, keywordParamsOrigin string, s
 func SaveAsHTML(respStr string, keywordParamsOrigin string, startTime time.Time) string {
 	longStringUrl := ""
 	if len(respStr) > max_length_wechat || strings.Contains(respStr, "```") {
-		// TODO
 		var buf bytes.Buffer
 		err := goldmark.Convert([]byte(respStr), &buf)
 		if err != nil {
@@ -73,10 +73,10 @@ func SaveAsHTML(respStr string, keywordParamsOrigin string, startTime time.Time)
 		} else {
 			log.Println("markdown --> html, ", utils.Substring(buf.String(), 20))
 
-			fileNameRight := utils.Substring(strings.ReplaceAll(keywordParamsOrigin, " ", ""), 12)
-			// TODO 同步至okzhang.com
+			fileNameRight := utils.Substring(strings.ReplaceAll(strings.ReplaceAll(keywordParamsOrigin, " ", ""), "/", ""), 12)
 			htmlFile := startTime.Format(timeLayoutStrYYYYMMDDHHmmss) + "_" + fileNameRight + ".html"
 			//htmlUrlPath := startTime.Format(timeLayoutStrYYYYMMDDHHmmss) + "_" + url.QueryEscape(fileNameRight) + ".html"
+
 			file, err := os.Create(config.HtmlDir + htmlFile)
 			if err != nil {
 				log.Println("create html file error", err)
