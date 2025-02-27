@@ -94,7 +94,7 @@ func processWechatRequest(w http.ResponseWriter, r *http.Request, data []byte, s
 	msgType := reqInfo.MsgType
 	voiceText := reqInfo.Recognition
 
-	log.Printf("----> A0 [start新请求---->] toUserName: %s, from: %s, msgId: %d, msgType: %s time: %s, keywordParams: %s ",
+	log.Printf("\n\n----> A0 [start新请求---->] toUserName: %s, from: %s, msgId: %d, msgType: %s time: %s, keywordParams: %s ",
 		toUserName, fromUserName, msgId, msgType, time.Unix(createTime, 0).Format(timeLayoutStr), keywordParamsOrigin)
 
 	if keywordParamsOrigin == "" && msgType == "" {
@@ -165,7 +165,7 @@ func processNewKeyword(w http.ResponseWriter, keywordParamsOrigin string, keywor
 	// B2 = 发起调用gpt的api
 	// 根据关键词查询GPT接口
 	apiStart := time.Now()
-	log.Printf("B2 开始查询ai %s \n", keywordParams)
+	log.Printf("  B2 开始查询ai %s \n", keywordParams)
 	respStr, err := GetAPIResult(keywordParamsOrigin, userHistoryMessage)
 
 	if err != nil {
@@ -193,7 +193,7 @@ func processNewKeyword(w http.ResponseWriter, keywordParamsOrigin string, keywor
 	endTime := time.Now()
 
 	// B3 = 调用gpt api结束
-	log.Printf("B3 查询ai接口成功 %s 耗时 %d s \n", keywordParams, endTime.Unix()-apiStart.Unix())
+	log.Printf("  B3 查询ai接口成功 %s 耗时 %d s \n", keywordParams, endTime.Unix()-apiStart.Unix())
 
 	timeSpend := endTime.Unix() - startTime.Unix()
 	is_finished := 1
@@ -237,7 +237,7 @@ func processExistsKeyword(w http.ResponseWriter, keywordInDb domain.KeywordAndAn
 		time_spend := time.Now().Unix() - keywordInDb.Create_time.Unix()
 		if time_spend < 2*retry_gap {
 			// 第2次查询
-			log.Printf("<---- A2.0 wechat retry 2... <10s的请求(%d s) 关键字正在处理中(status_code:504) %s \n", time_spend, keywordParams)
+			log.Printf("  <-- A2.0 wechat retry 2... <10s的请求(%d s) 关键字正在处理中(status_code:504) %s \n", time_spend, keywordParams)
 
 			time.Sleep(time.Duration(retry_gap) * time.Second)
 

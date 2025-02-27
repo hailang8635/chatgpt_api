@@ -77,7 +77,7 @@ func GetDB() *gorm.DB {
 
 // func Insert(fromuser string, keyword string, answer string, is_finished int, is_done int) int64 {
 func Insert(keywords domain.KeywordAndAnswerItem) int64 {
-	startTime := time.Now().UnixMilli()
+	//startTime := time.Now().UnixMilli()
 
 	keywords.Create_time = time.Now()
 	keywords.Finish_time = time.Now()
@@ -89,7 +89,7 @@ func Insert(keywords domain.KeywordAndAnswerItem) int64 {
 
 	// fmt.Println("insert 行数", result.RowsAffected)
 	//return result.RowsAffected
-	log.Println(">Insert 耗时:", time.Now().UnixMilli()-startTime, "ms, 数量:", result.RowsAffected, ", 关键字", keywords.Keyword)
+	//log.Println(">Insert 耗时:", time.Now().UnixMilli()-startTime, "ms, 数量:", result.RowsAffected, ", 关键字", keywords.Keyword)
 	return keywords.Id
 }
 

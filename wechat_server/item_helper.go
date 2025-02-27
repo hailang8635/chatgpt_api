@@ -6,7 +6,6 @@ import (
 	"chatgpt_api/domain"
 	"chatgpt_api/utils"
 	"encoding/xml"
-	"fmt"
 	"github.com/yuin/goldmark"
 	"log"
 	"os"
@@ -80,7 +79,7 @@ func SaveAsHTML(respStr string, keywordParamsOrigin string, startTime time.Time)
 			//htmlUrlPath := startTime.Format(timeLayoutStrYYYYMMDDHHmmss) + "_" + url.QueryEscape(fileNameRight) + ".html"
 			file, err := os.Create(config.HtmlDir + htmlFile)
 			if err != nil {
-				fmt.Println("create html file error", err)
+				log.Println("create html file error", err)
 			}
 			file.WriteString("<html><head>  " +
 				"<title>ChatGPT助手-安德鲁家的550W</title>  " +
@@ -92,7 +91,7 @@ func SaveAsHTML(respStr string, keywordParamsOrigin string, startTime time.Time)
 
 			_, err = buf.WriteTo(file)
 			if err != nil {
-				fmt.Println("write html file error", err)
+				log.Println("write html file error", err)
 			}
 
 			// https://chatapi.okzhang.com/html/cah/test.html

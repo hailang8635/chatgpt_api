@@ -5,7 +5,6 @@ import (
 	"chatgpt_api/domain"
 	"chatgpt_api/utils"
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -34,7 +33,7 @@ func DeepSeekApiWithHistory(content string, keywordsArr []domain.KeywordAndAnswe
 		messagesInfo = append(messagesInfo, Message{Role: "user", Content: keywords.Keyword})
 		// messagesInfo = append(messagesInfo, Message{Role: "system", Content: keywords.Answer})
 	}
-	log.Printf("附带历史消息 %d 条", len(keywordsArr))
+	log.Printf("  附带历史消息 %d 条", len(keywordsArr))
 
 	messagesInfo = append(messagesInfo, Message{Role: "user", Content: content})
 
@@ -71,7 +70,7 @@ func DeepSeekApiWithHistory(content string, keywordsArr []domain.KeywordAndAnswe
 	body, _ := io.ReadAll(resp.Body)
 
 	if resp.StatusCode != 200 {
-		fmt.Println("StatusCode错误 resp.Status:", resp.Status)
+		log.Println("StatusCode错误 resp.Status:", resp.Status)
 	}
 
 	var result DeepseekResponse
@@ -81,13 +80,13 @@ func DeepSeekApiWithHistory(content string, keywordsArr []domain.KeywordAndAnswe
 
 	// fmt.Println("DeepseekResponse: ", result)
 	if result.Error.Code == "" {
-		fmt.Println("  <-- 回复:", utils.Substring(result.Choices[0].Message.Content, 100))
+		log.Println("  <-- 回复:", utils.Substring(result.Choices[0].Message.Content, 100))
 
 		respContentStr := result.Choices[0].Message.Content
 		log.Printf("  <-- %s 调用 deepseek.com 完成 %s", content, utils.Substring(respContentStr, 20))
 		return respContentStr, nil
 	} else {
-		fmt.Println("  <-- 错误:", result.Error.Message)
+		log.Println("  <-- 错误:", result.Error.Message)
 		//return "", GptApiError(resp.StatusCode, resp.Status, result.Error.Message)
 		return "", nil
 	}

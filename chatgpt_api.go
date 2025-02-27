@@ -2,7 +2,7 @@ package main
 
 import (
 	"chatgpt_api/wechat_server"
-	"fmt"
+	"log"
 )
 
 func main() {
@@ -12,7 +12,7 @@ func main() {
 
 	//utils.TestBase64()
 
-	fmt.Println("start...")
+	log.Println("start...")
 	wechat_server.Gpt_http_server()
-	fmt.Println("stop...")
+	log.Println("stop...")
 }

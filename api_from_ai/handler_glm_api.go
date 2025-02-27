@@ -6,7 +6,6 @@ import (
 	"chatgpt_api/domain"
 	"chatgpt_api/utils"
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -74,7 +73,7 @@ func GLMApiWithHistory(content string, keywordsArr []domain.KeywordAndAnswerItem
 	body, _ := io.ReadAll(resp.Body)
 
 	if resp.StatusCode != 200 {
-		fmt.Println("StatusCode错误 resp.Status:", resp.Status)
+		log.Println("StatusCode错误 resp.Status:", resp.Status)
 	}
 
 	var result ChatGLMResponse2
@@ -84,9 +83,9 @@ func GLMApiWithHistory(content string, keywordsArr []domain.KeywordAndAnswerItem
 
 	// fmt.Println("ChatGLMResponse2: ", result)
 	if result.Error.Code == "" {
-		fmt.Println("回复:", utils.Substring(result.Choices[0].Message.Content, 100))
+		log.Println("回复:", utils.Substring(result.Choices[0].Message.Content, 100))
 	} else {
-		fmt.Println("错误:", result.Error.Message)
+		log.Println("错误:", result.Error.Message)
 	}
 
 	//respStr := string(respBody)

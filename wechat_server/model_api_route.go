@@ -4,7 +4,6 @@ import (
 	"chatgpt_api/api_from_ai"
 	"chatgpt_api/config"
 	"chatgpt_api/domain"
-	"fmt"
 	"log"
 )
 
@@ -72,8 +71,8 @@ func mainabc() {
 	actionName := "action1"
 	result, err := ExecuteAction(actionName)
 	if err != nil {
-		fmt.Println("Error:", err)
+		log.Println("Error:", err)
 	} else {
-		fmt.Println("Result:", result)
+		log.Println("Result:", result)
 	}
 }

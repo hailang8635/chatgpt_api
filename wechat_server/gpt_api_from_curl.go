@@ -3,7 +3,6 @@ package wechat_server
 import (
 	"bufio"
 	"chatgpt_api/api_from_ai"
-	"fmt"
 	"log"
 	"os"
 )
@@ -44,9 +43,9 @@ func Ask_gpt() (string, error) {
 			log.Println(resp)
 		}
 		//log.Println()
-		fmt.Println()
+		log.Println()
 		log.Println("请继续输入您要问的内容？")
-		fmt.Println()
+		log.Println()
 	}
 
 	return "ask done", nil
