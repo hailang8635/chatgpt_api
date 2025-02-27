@@ -5,7 +5,7 @@ database:
   password:
   dbname: chatgpt
 
-
+#chatgpt/glm/deepseek
 defaultAPI: glm
 defaultPort: ":8080"
 
@@ -21,8 +21,16 @@ glm.url: https://open.bigmodel.cn/api/paas/v4/chat/completions/
 glm.apikey: xxx.xxx
 glm.model: glm-4-plus
 
+# deepseek配置
+deepseek.url: https://api.deepseek.com/chat/completions
+deepseek.apikey: sk-xxxx
+deepseek.model: deepseek-chat
+
 # 生成静态页面
 htmlDir: /usr/share/nginx/html/chatgpt_api_html/
 #htmlDir: E:/logs/
 htmlUrl: http://chatapi.okzhang.com/html/chatgpt_api_html/
 
+# 是否mock，本地默认mock掉
+switchForMockOfAiApi: false
+apiResponseString: "1预测下一线"

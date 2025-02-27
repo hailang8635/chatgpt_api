@@ -22,6 +22,10 @@ var GLM_Apikey string
 var GLM_Model string
 var GLM_Url string
 
+var DeepseekApiKey string
+var DeepseekModel string
+var DeepseekUrl string
+
 var HtmlDir string
 var HtmlUrl string
 
@@ -67,8 +71,13 @@ func initProperties() {
 	GLM_Model = config.GetString("glm.model")
 	GLM_Url = config.GetString("glm.url")
 
+	DeepseekApiKey = config.GetString("deepseek.apikey")
+	DeepseekModel = config.GetString("deepseek.model")
+	DeepseekUrl = config.GetString("deepseek.url")
+
 	HtmlUrl = config.GetString("htmlUrl")
 	HtmlDir = config.GetString("htmlDir")
+
 	SwitchForMockOfAiApi = config.GetBool("switchForMockOfAiApi")
 	ApiResponseString = config.GetString("apiResponseString")
 }

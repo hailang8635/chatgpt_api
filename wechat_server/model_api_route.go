@@ -26,6 +26,9 @@ func GetAPIResult(content string, item []domain.KeywordAndAnswerItem) (string, e
 	} else if api == "glm" {
 		return api_from_ai.GLMApiWithHistory(content, item)
 
+	} else if api == "deepseek" {
+		return api_from_ai.DeepSeekApiWithHistory(content, item)
+
 	} else {
 		return api_from_ai.GLMApiWithHistory(content, item)
 	}

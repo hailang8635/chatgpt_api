@@ -2,7 +2,6 @@ package utils
 
 import (
 	"chatgpt_api/domain"
-	"fmt"
 	"github.com/spf13/viper"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -95,7 +94,7 @@ func Insert(keywords domain.KeywordAndAnswerItem) int64 {
 }
 
 func Update(keywords domain.KeywordAndAnswerItem) int64 {
-	startTime := time.Now().UnixMilli()
+	//startTime := time.Now().UnixMilli()
 
 	// .Debug()
 	db := GetDB()
@@ -107,7 +106,7 @@ func Update(keywords domain.KeywordAndAnswerItem) int64 {
 		Finish_time: keywords.Finish_time,
 	})
 
-	log.Println(">Update 耗时:", time.Now().UnixMilli()-startTime, "ms, 数量:", result.RowsAffected, ", 关键字", keywords.Keyword)
+	//log.Println(">Update 耗时:", time.Now().UnixMilli()-startTime, "ms, 数量:", result.RowsAffected, ", 关键字", keywords.Keyword)
 	return result.RowsAffected
 }
 
@@ -121,7 +120,7 @@ func SelectOne(keywords domain.KeywordAndAnswerItem) (int64, domain.KeywordAndAn
 	}
 }
 func SelectList(keywords domain.KeywordAndAnswerItem, nums int) (int64, []domain.KeywordAndAnswerItem) {
-	startTime := time.Now().UnixMilli()
+	//startTime := time.Now().UnixMilli()
 
 	// 创建数据信息
 	var keywords_result []domain.KeywordAndAnswerItem
@@ -155,7 +154,7 @@ func SelectList(keywords domain.KeywordAndAnswerItem, nums int) (int64, []domain
 	db := GetDB()
 	db = db.Table("t_keywords")
 	if !keywords.Create_time_start.IsZero() {
-		fmt.Println("keywords.Create_time_start", keywords.Create_time_start)
+		//fmt.Println("keywords.Create_time_start", keywords.Create_time_start)
 		db = db.Where(" create_time >= ? ", keywords.Create_time_start)
 	}
 
@@ -169,7 +168,7 @@ func SelectList(keywords domain.KeywordAndAnswerItem, nums int) (int64, []domain
 	// 记录排序为按ID顺序递增
 	result := db.Where(params).Limit(nums).Find(&keywords_result)
 
-	log.Println(">Select 耗时:", time.Now().UnixMilli()-startTime, "ms, 数量:", result.RowsAffected, ", 关键字: ", keywords.Keyword)
+	//log.Println(">Select 耗时:", time.Now().UnixMilli()-startTime, "ms, 数量:", result.RowsAffected, ", 关键字: ", keywords.Keyword)
 	return result.RowsAffected, keywords_result
 
 }

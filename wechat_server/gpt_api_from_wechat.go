@@ -55,8 +55,8 @@ func chatHandlerWithDB() {
 		}
 
 		// TODO 支持GPT-4
-		openAiModelVersion := r.URL.Query().Get("gpt_api_version")
-		log.Println("openAiModelVersion", openAiModelVersion)
+		//openAiModelVersion := r.URL.Query().Get("gpt_api_version")
+		//log.Println("openAiModelVersion", openAiModelVersion)
 
 		//
 		// 用户 --> 微信平台 --> okzhang.com服务端 --> gpt
@@ -94,7 +94,7 @@ func processWechatRequest(w http.ResponseWriter, r *http.Request, data []byte, s
 	msgType := reqInfo.MsgType
 	voiceText := reqInfo.Recognition
 
-	log.Printf("----> A0 toUserName: %s, from: %s, msgId: %d, msgType: %s time: %s, keywordParams: %s ",
+	log.Printf("----> A0 [start新请求---->] toUserName: %s, from: %s, msgId: %d, msgType: %s time: %s, keywordParams: %s ",
 		toUserName, fromUserName, msgId, msgType, time.Unix(createTime, 0).Format(timeLayoutStr), keywordParamsOrigin)
 
 	if keywordParamsOrigin == "" && msgType == "" {
@@ -219,12 +219,8 @@ func processExistsKeyword(w http.ResponseWriter, keywordInDb domain.KeywordAndAn
 	if keywordInDb.Is_done == 1 {
 		log.Printf("<---- A1 直接返回已完成的keyword： %s", keywordParams)
 
-		is_repeat_question := ""
-		if keywordInDb.Is_finished == 1 {
-			is_repeat_question = "\n[重复问题]"
-		}
 		fmt.Fprintf(w, "%s", MakeResponseString(toUserName, fromUserName,
-			utils.SubstringByBytesWholeChar(keywordInDb.Answer, max_length_wechat-300)+is_repeat_question+"\n"+getUrl(keywordInDb)))
+			utils.SubstringByBytesWholeChar(keywordInDb.Answer, max_length_wechat-300)+getResponseFields(keywordInDb)))
 
 		// 对应更新为已返回
 		if keywordInDb.Is_finished != 1 {
@@ -266,7 +262,7 @@ func processExistsKeyword(w http.ResponseWriter, keywordInDb domain.KeywordAndAn
 
 			// 返回未完成的记录，并更新记录的is_finished状态
 			fmt.Fprintf(w, "%s", MakeResponseString(toUserName, fromUserName,
-				utils.SubstringByBytesWholeChar(keywordInDbAt15s.Answer, max_length_wechat-300)+"\n"+getUrl(keywordInDbAt15s)))
+				utils.SubstringByBytesWholeChar(keywordInDbAt15s.Answer, max_length_wechat-300)+getResponseFields(keywordInDbAt15s)))
 
 			keywordInDbAt15s.Is_finished = 1
 			utils.Update(keywordInDbAt15s)
@@ -288,7 +284,7 @@ func processExistsKeyword(w http.ResponseWriter, keywordInDb domain.KeywordAndAn
 
 			// 返回未完成的记录，并更新记录的is_finished状态
 			fmt.Fprintf(w, "%s", MakeResponseString(toUserName, fromUserName,
-				utils.SubstringByBytesWholeChar(keywordInDb_not_returned.Answer, max_length_wechat-300)+"\n"+getUrl(keywordInDb_not_returned)))
+				utils.SubstringByBytesWholeChar(keywordInDb_not_returned.Answer, max_length_wechat-300)+getResponseFields(keywordInDb_not_returned)))
 
 			keywordInDb_not_returned.Is_finished = 1
 			utils.Update(keywordInDb_not_returned)
@@ -296,7 +292,7 @@ func processExistsKeyword(w http.ResponseWriter, keywordInDb domain.KeywordAndAn
 		} else {
 			// 15s内未查成功，且无未返回的记录时
 
-			log.Printf("<---- A2.3 关键字正在处理中(已耗时:%d ), 回复给client进行重试 %s \n", time_spend, keywordParams)
+			log.Printf("<---- A2.3 关键字正在处理中(已耗时:%d ms), 回复给client进行重试 %s \n", time_spend, keywordParams)
 
 			// 收到粉丝消息后不想或者不能5秒内回复时，需回复“success”字符串（下文详细介绍）
 			fmt.Fprintf(w, "%s", MakeResponseString(toUserName, fromUserName, "答案生成中, 请15s后回复【1】获取答案"))
@@ -306,10 +302,16 @@ func processExistsKeyword(w http.ResponseWriter, keywordInDb domain.KeywordAndAn
 	return
 }
 
-func getUrl(keywordItemInDb domain.KeywordAndAnswerItem) string {
-	urlString3 := ""
-	if keywordItemInDb.Url != "" {
-		urlString3 = "[答案详情见链接]\n" + config.HtmlUrl + url.QueryEscape(keywordItemInDb.Url)
+func getResponseFields(keywordInDb domain.KeywordAndAnswerItem) string {
+	returnString := ""
+	if len(keywordInDb.Answer) > max_length_wechat-300 {
+		returnString = "[...]"
 	}
-	return urlString3
+	if keywordInDb.Is_finished == 1 {
+		returnString += "[重复问题]"
+	}
+	if keywordInDb.Url != "" {
+		returnString += "\n[答案详情见链接]  " + config.HtmlUrl + url.QueryEscape(keywordInDb.Url)
+	}
+	return returnString
 }
