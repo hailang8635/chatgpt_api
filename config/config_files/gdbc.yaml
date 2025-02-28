@@ -6,7 +6,7 @@ database:
   dbname: chatgpt
 
 #chatgpt/glm/deepseek
-defaultAPI: glm
+defaultAPI: deepseek
 defaultPort: ":8080"
 
 # gpt模型的配置

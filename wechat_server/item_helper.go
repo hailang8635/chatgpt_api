@@ -87,6 +87,15 @@ func SaveAsHTML(respStr string, keywordParamsOrigin string, startTime time.Time)
 				"<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no\">" +
 				"<meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\" />" +
 				"</head>")
+
+			file.WriteString("<h4>有用户提问如下：</h4>\n")
+
+			file.WriteString("<h2>")
+			file.WriteString(keywordParamsOrigin)
+			file.WriteString("</h2>\n\n\n")
+
+			file.WriteString("<h4>以下是来自" + strings.ToUpper(config.DefaultAPI) + "的回答：</h4>\n")
+
 			defer file.Close()
 
 			_, err = buf.WriteTo(file)
