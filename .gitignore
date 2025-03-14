@@ -4,3 +4,4 @@ chatgpt_api
 ws_cursor/java1/target/classes/com/example/OkHttpExample$1.class
 /ws_cursor/java1/target
 config/gdbc-wechatserver.yaml
+config/gdbc.yaml
