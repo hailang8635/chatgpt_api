@@ -68,4 +68,49 @@ chatgpt_api
 4. 发布到国际云：将编译后的文件发布到国际云上，暴露API接口。
 5. 配置微信后台：将API接口地址配置到微信后台。
 
+
+
 通过以上步骤，就可以实现微信公众号与ChatGPT的对接。
+
+
+
+golang编译后发布到国际云上后暴露API接口，把地址配置到微信后台使用
+
+
+```
+设置SDK，File > Settings > Go > GOROOT 
+
+go mod init chatgpt_api
+go build chatgpt_api.go
+
+
+
+idea 设置 File ---> Setting ---> Language & Framework ----> Go ----> Go Modules
+选中 Enable Go Modules(vgo) integration
+Proxy：https://goproxy.cn
+```
+
+## go build
+
+```
+### GOOS：目标平台的操作系统（darwin、freebsd、linux、windows）
+### GOARCH：目标平台的体系架构（386、amd64、arm）
+### 当CGO_ENABLED=1， 进行编译时， 会将文件中引用libc的库（比如常用的net包），以动态链接的方式生成目标文件。
+### 当CGO_ENABLED=0， 进行编译时， 则会把在目标文件中未定义的符号（外部函数）一起链接到可执行文件中。
+  
+SET GOOS=linux
+SET GOARCH=arm
+SET CGO_ENABLED=0
+
+Windows:
+go build -o chantgpt_api.exe chatgpt_api.go
+
+Mac:
+CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build chatgpt_api.go
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build chatgpt_api.go
+CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build chatgpt_api.go
+
+```
+
+### 提交记录
+

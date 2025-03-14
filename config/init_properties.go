@@ -31,13 +31,15 @@ var HtmlUrl string
 
 var SwitchForMockOfAiApi bool
 var ApiResponseString string
+var Batch_ask_prefix string
+var Batch_ask_suffix string
 
 // 启动时每个包自动执行init()方法
-func init() {
-
-	initProperties()
+//func init() {
+func InitProperties() {
 
 	initBadWords()
+	initProperties()
 
 }
 
@@ -79,7 +81,8 @@ func initProperties() {
 	HtmlDir = config.GetString("htmlDir")
 
 	SwitchForMockOfAiApi = config.GetBool("switchForMockOfAiApi")
-	ApiResponseString = config.GetString("apiResponseString")
+	Batch_ask_prefix = config.GetString("batch_ask_prefix")
+	Batch_ask_suffix = config.GetString("batch_ask_suffix")
 }
 
 /**
@@ -109,13 +112,13 @@ func initBadWords() {
 
 func getPackrText(path string, filename string) string {
 	box := packr.NewBox(path)
-	log.Println("getPackrText ", filename, "in", box.List(), ", path:[", box.Path, "]", path)
+	log.Println("getPackrText ", filename, "in", box.List(), ", path:[", box.Path, "]")
 	text, err := box.FindString(filename)
 
 	if err != nil {
-		log.Println("init_properties 1", err)
+		log.Println("getPackrText 1", err)
 	} else {
-		log.Println("init_properties 2", utils.Substring(text, 10))
+		log.Println("getPackrText 2", utils.Substring(text, 10))
 	}
 
 	text = strings.ReplaceAll(text, "\r\n", "\n")

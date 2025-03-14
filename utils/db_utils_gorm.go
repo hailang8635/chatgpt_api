@@ -14,7 +14,8 @@ import (
 var GlobalConn *gorm.DB
 
 // 启动时每个包自动执行init()方法
-func init() {
+//func init() {
+func InitGDBC() {
 
 	config := viper.New()
 	config.AddConfigPath("./config/")

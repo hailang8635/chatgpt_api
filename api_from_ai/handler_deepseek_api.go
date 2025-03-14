@@ -83,7 +83,7 @@ func DeepSeekApiWithHistory(content string, keywordsArr []domain.KeywordAndAnswe
 		log.Println("  <-- 回复:", utils.Substring(result.Choices[0].Message.Content, 100))
 
 		respContentStr := result.Choices[0].Message.Content
-		log.Printf("  <-- %s 调用 deepseek.com 完成 %s", content, utils.Substring(respContentStr, 20))
+		log.Printf("  <-- 调用 deepseek.com 完成: %s，  问题：【%s】", utils.Substring(respContentStr, 20), content)
 		return respContentStr, nil
 	} else {
 		log.Println("  <-- 错误:", result.Error.Message)
