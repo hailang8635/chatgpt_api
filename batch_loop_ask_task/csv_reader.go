@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -57,14 +58,13 @@ func ReadCsv(fileName string) string {
 			titleLine = record
 		} else {
 			respStr := Ask_single(titleLine, record)
-			utils.AppendFile("./ai_output_"+fileName+".txt", respStr+"\n")
-			//, reqStr+"\t\t"+respStr+"\n")
+			utils.AppendFile(fileName[:strings.LastIndex(fileName, ".")]+"_output_from_ai"+".csv", strings.ReplaceAll(strings.ReplaceAll(respStr, ",", "，"), "|", ",")+"\n")
 		}
 
 	}
 
 	fmt.Printf("读取 %d 行数据\n", lineCount)
-	return "处理完毕行数：" + string(lineCount)
+	return "处理完毕行数：" + strconv.Itoa(lineCount)
 }
 
 // 处理单行记录的函数

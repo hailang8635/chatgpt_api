@@ -29,7 +29,7 @@ func main() {
 		userArgs := allArgs[1:]
 		fmt.Println("用户参数列表:")
 		for i, arg := range userArgs {
-			fmt.Printf("参数%d: %s\n", i+1, arg)
+			fmt.Printf("参数%d: %s\n\n", i+1, arg)
 		}
 
 		//batch_loop_ask_task.Ask_batch("sample_company_1.csv")

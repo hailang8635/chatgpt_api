@@ -30,6 +30,6 @@ func Ask_single(titleLine []string, record []string) string {
 		return ""
 	} else {
 		fmt.Println("Ask_single完成 ", reqStr, respStr)
-		return reqStr + "\t\t" + respStr
+		return reqStr + "|" + respStr
 	}
 }

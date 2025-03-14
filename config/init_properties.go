@@ -44,6 +44,7 @@ func InitProperties() {
 }
 
 func initProperties() {
+	log.Println("initProperties start")
 	config := viper.New()
 	config.AddConfigPath("./config/")
 	config.SetConfigName("gdbc")
@@ -83,6 +84,8 @@ func initProperties() {
 	SwitchForMockOfAiApi = config.GetBool("switchForMockOfAiApi")
 	Batch_ask_prefix = config.GetString("batch_ask_prefix")
 	Batch_ask_suffix = config.GetString("batch_ask_suffix")
+
+	log.Println("initProperties end, 共加载:", len(config.AllKeys()))
 }
 
 /**
@@ -106,17 +109,31 @@ func initBadWords() {
 
 	bad_words = append(bad_words, "jjjj")
 
-	log.Println("bad_words len:", len(bad_words))
+	log.Println("bad_words 敏感词数量:", len(bad_words))
 
 }
 
 func getPackrText(path string, filename string) string {
 	box := packr.NewBox(path)
-	log.Println("getPackrText ", filename, "in", box.List(), ", path:[", box.Path, "]")
+	fileList := box.List()
+	log.Println("getPackrText ", filename, "in", fileList, ", path:[", box.Path, "]")
+
+	containsFile := false
+	for _, fileItemName := range fileList {
+		if filename == fileItemName {
+			containsFile = true
+		}
+	}
+	if !containsFile {
+		log.Println("getPackrText file not foud", filename)
+		return ""
+	}
+
 	text, err := box.FindString(filename)
 
 	if err != nil {
 		log.Println("getPackrText 1", err)
+		return ""
 	} else {
 		log.Println("getPackrText 2", utils.Substring(text, 10))
 	}
