@@ -83,7 +83,7 @@ func GLMApiWithHistory(content string, keywordsArr []domain.KeywordAndAnswerItem
 
 	// fmt.Println("ChatGLMResponse2: ", result)
 	if result.Error.Code == "" {
-		log.Println("回复:", utils.Substring(result.Choices[0].Message.Content, 100))
+		log.Println("回复:", utils.Substring(result.Choices[0].Message.Content, 100)+"\n\n")
 	} else {
 		log.Println("错误:", result.Error.Message)
 	}
