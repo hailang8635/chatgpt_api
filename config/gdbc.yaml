@@ -1,0 +1,42 @@
+database:
+  host:
+  port: 3306
+  user:
+  password:
+  dbname: chatgpt
+
+#chatgpt/glm/deepseek
+defaultAPI: deepseek
+defaultPort: ":8080"
+
+# gpt模型的配置
+gptUrl: https://api.openai.com/v1/chat/completions
+apikey: sk-xxx
+
+# gpt-3.5-turbo、 gpt-4、 gpt-4-1106-preview
+modelVersion: gpt-4
+
+# glm模型的配置
+glm.url: https://open.bigmodel.cn/api/paas/v4/chat/completions/
+glm.apikey: xxx.xxx
+glm.model: glm-4-plus
+
+# deepseek配置
+deepseek.url: https://api.deepseek.com/chat/completions
+deepseek.apikey: sk-xxxx
+deepseek.model: deepseek-chat
+#deepseek.model: deepseek-reasoner
+
+# 生成静态页面
+htmlDir: /usr/share/nginx/html/chatgpt_api_html/
+#htmlDir: E:/logs/
+htmlUrl: http://chatapi.okzhang.com/html/chatgpt_api_html/
+
+# 是否mock，本地默认mock掉
+switchForMockOfAiApi: false
+apiResponseString: "1预测下一线"
+
+# 关键词的前缀、后缀
+batch_ask_prefix: "请帮我判断一下,"
+batch_ask_suffix: ", 基于国民经济行业分类（GB/T 4754-2017)标准下钻到四级分类, 不加说明仅返回|分割的一、二、三、四级分类名称"
+
